@@ -1,0 +1,54 @@
+[0m10:21:25.743078 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x750071976f60>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x750072f3ad20>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x750072a94d40>]}
+
+
+============================== 10:21:25.746732 | f2ee8dcc-a779-4b97-a217-59883efb538a ==============================
+[0m10:21:25.746732 [info ] [MainThread]: Running with dbt=1.12.3
+[0m10:21:25.747644 [debug] [MainThread]: running dbt with arguments {'partial_parse': 'True', 'use_experimental_parser': 'False', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'target_path': 'None', 'quiet': 'False', 'fail_fast': 'False', 'profiles_dir': '/home/codespace/.dbt', 'send_anonymous_usage_stats': 'True', 'maximum_seed_size_mib': '1', 'empty': 'None', 'hints_enabled': 'True', 'cache_selected_only': 'False', 'no_print': 'None', 'version_check': 'True', 'use_colors': 'True', 'introspect': 'True', 'log_cache_events': 'False', 'printer_width': '80', 'log_path': '/workspaces/DW_MiniProject/fiveexpress_duckdb/logs', 'warn_error': 'None', 'write_json': 'True', 'debug': 'False', 'static_parser': 'True', 'indirect_selection': 'eager', 'log_format': 'default', 'invocation_command': 'dbt debug'}
+[0m10:21:25.762743 [info ] [MainThread]: dbt version: 1.12.3
+[0m10:21:25.763477 [info ] [MainThread]: python version: 3.12.1
+[0m10:21:25.764043 [info ] [MainThread]: python path: /workspaces/DW_MiniProject/.venv/bin/python
+[0m10:21:25.764647 [info ] [MainThread]: os info: Linux-6.8.0-1052-azure-x86_64-with-glibc2.39
+[0m10:21:25.891630 [info ] [MainThread]: Using profiles dir at /home/codespace/.dbt
+[0m10:21:25.892385 [info ] [MainThread]: Using profiles.yml file at /home/codespace/.dbt/profiles.yml
+[0m10:21:25.893023 [info ] [MainThread]: Using dbt_project.yml file at /workspaces/DW_MiniProject/fiveexpress_duckdb/dbt_project.yml
+[0m10:21:25.895677 [info ] [MainThread]: adapter type: duckdb
+[0m10:21:25.896516 [info ] [MainThread]: adapter version: 1.11.0
+[0m10:21:26.045510 [info ] [MainThread]: Configuration:
+[0m10:21:26.046266 [info ] [MainThread]:   profiles.yml file [[32mOK found and valid[0m]
+[0m10:21:26.046869 [info ] [MainThread]:   dbt_project.yml file [[32mOK found and valid[0m]
+[0m10:21:26.047587 [info ] [MainThread]: Required dependencies:
+[0m10:21:26.048222 [debug] [MainThread]: Executing "git --help"
+[0m10:21:26.079759 [debug] [MainThread]: STDOUT: "b"usage: git [-v | --version] [-h | --help] [-C <path>] [-c <name>=<value>]\n           [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]\n           [-p | --paginate | -P | --no-pager] [--no-replace-objects] [--no-lazy-fetch]\n           [--no-optional-locks] [--no-advice] [--bare] [--git-dir=<path>]\n           [--work-tree=<path>] [--namespace=<name>] [--config-env=<name>=<envvar>]\n           <command> [<args>]\n\nThese are common Git commands used in various situations:\n\nstart a working area (see also: git help tutorial)\n   clone      Clone a repository into a new directory\n   init       Create an empty Git repository or reinitialize an existing one\n\nwork on the current change (see also: git help everyday)\n   add        Add file contents to the index\n   mv         Move or rename a file, a directory, or a symlink\n   restore    Restore working tree files\n   rm         Remove files from the working tree and from the index\n\nexamine the history and state (see also: git help revisions)\n   bisect     Use binary search to find the commit that introduced a bug\n   diff       Show changes between commits, commit and working tree, etc\n   grep       Print lines matching a pattern\n   log        Show commit logs\n   show       Show various types of objects\n   status     Show the working tree status\n\ngrow, mark and tweak your common history\n   backfill   Download missing objects in a partial clone\n   branch     List, create, or delete branches\n   commit     Record changes to the repository\n   merge      Join two or more development histories together\n   rebase     Reapply commits on top of another base tip\n   reset      Set `HEAD` or the index to a known state\n   switch     Switch branches\n   tag        Create, list, delete or verify tags\n\ncollaborate (see also: git help workflows)\n   fetch      Download objects and refs from another repository\n   pull       Fetch from and integrate with another repository or a local branch\n   push       Update remote refs along with associated objects\n\n'git help -a' and 'git help -g' list available subcommands and some\nconcept guides. See 'git help <command>' or 'git help <concept>'\nto read about a specific subcommand or concept.\nSee 'git help git' for an overview of the system.\n""
+[0m10:21:26.081931 [debug] [MainThread]: STDERR: "b''"
+[0m10:21:26.083484 [info ] [MainThread]:  - git [[32mOK found[0m]
+
+[0m10:21:26.085139 [info ] [MainThread]: Connection:
+[0m10:21:26.085995 [info ] [MainThread]:   database: dev
+[0m10:21:26.086782 [info ] [MainThread]:   schema: main
+[0m10:21:26.087557 [info ] [MainThread]:   path: dev.duckdb
+[0m10:21:26.088300 [info ] [MainThread]:   config_options: None
+[0m10:21:26.089402 [info ] [MainThread]:   extensions: None
+[0m10:21:26.091629 [info ] [MainThread]:   settings: {}
+[0m10:21:26.092431 [info ] [MainThread]:   external_root: .
+[0m10:21:26.094077 [info ] [MainThread]:   use_credential_provider: None
+[0m10:21:26.096554 [info ] [MainThread]:   attach: None
+[0m10:21:26.098835 [info ] [MainThread]:   filesystems: None
+[0m10:21:26.099850 [info ] [MainThread]:   remote: None
+[0m10:21:26.101938 [info ] [MainThread]:   plugins: None
+[0m10:21:26.112172 [info ] [MainThread]:   disable_transactions: False
+[0m10:21:26.121340 [info ] [MainThread]: Registered adapter: duckdb=1.11.0
+[0m10:21:26.278138 [debug] [MainThread]: Acquiring new duckdb connection 'debug'
+[0m10:21:26.307699 [debug] [MainThread]: Using duckdb connection "debug"
+[0m10:21:26.308306 [debug] [MainThread]: On debug: select 1 as id
+[0m10:21:26.308893 [debug] [MainThread]: Opening a new connection, currently in state init
+[0m10:21:26.325104 [debug] [MainThread]: SQL status: OK in 0.016 seconds
+[0m10:21:26.326332 [debug] [MainThread]: On debug: Close
+[0m10:21:26.326905 [info ] [MainThread]:   Connection test: [[32mOK connection ok[0m]
+
+[0m10:21:26.327516 [info ] [MainThread]: [32mAll checks passed![0m
+[0m10:21:26.328799 [debug] [MainThread]: Resource report: {"command_name": "debug", "command_success": true, "command_wall_clock_time": 0.7290506, "process_in_blocks": "6512", "process_kernel_time": 0.302434, "process_mem_max_rss": "154196", "process_out_blocks": "24", "process_user_time": 2.469068}
+[0m10:21:26.329483 [debug] [MainThread]: Command `dbt debug` succeeded at 10:21:26.329326 after 0.73 seconds
+[0m10:21:26.329976 [debug] [MainThread]: Connection 'debug' was properly closed.
+[0m10:21:26.330508 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x750072ae8a70>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x750073023200>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x750072ba81d0>]}
+[0m10:21:26.331072 [debug] [MainThread]: Flushing usage events
+[0m10:21:27.358155 [debug] [MainThread]: An error was encountered while trying to flush usage events
