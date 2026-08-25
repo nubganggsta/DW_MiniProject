@@ -24,3 +24,14 @@ Phlapapon Kulto 673020626-9
 4. **Conformed Dimensions:** ใช้ `Dim_Date`, `Dim_Truck`, `Dim_Driver`, และ `Dim_Customer` ร่วมกันในหลาย Fact Tables เพื่อให้วิเคราะห์ข้อมูลข้ามโดเมนได้ (เช่น เปรียบเทียบรายได้ ค่าน้ำมัน และอุบัติเหตุต่อ Truck/Driver)
 
 ---
+## กระบวนการ ETL
+
+## Business Questions
+
+## Data Model Diagram
+
+## ETL หรือ ELT Process
+
+## Data Warehouse Database
+
+## Interactive Dashboard
