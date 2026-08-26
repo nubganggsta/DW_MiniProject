@@ -4,3 +4,4 @@ env/
 
 # Python Cache
 __pycache__/logs/
+logs/
