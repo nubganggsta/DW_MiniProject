@@ -1,0 +1,151 @@
+﻿driver_id,full_name,first_name,last_name,employment_status,hire_date,termination_date,date_of_birth,years_experience,license_number,license_state,cdl_class,home_terminal
+DRV00001,Jennifer Hernandez,Jennifer,Hernandez,Active,2014-10-31,,1973-11-07,3,DL673510887,WA,A,Denver
+DRV00002,William Martin,William,Martin,Active,2020-10-02,,1976-11-03,20,DL128955006,GA,A,Columbus
+DRV00003,Charles Hernandez,Charles,Hernandez,Active,2021-09-21,,1970-04-06,19,DL523076025,NC,A,Salt Lake City
+DRV00004,Barbara Brown,Barbara,Brown,Active,2013-09-08,,1995-02-06,19,DL735540030,WA,A,Denver
+DRV00005,Mary Martinez,Mary,Martinez,Active,2018-12-02,,1960-07-15,12,DL706011277,AZ,A,Chicago
+DRV00006,Robert Taylor,Robert,Taylor,Active,2019-04-04,,1990-05-02,23,DL811890569,NC,A,Portland
+DRV00007,James Martinez,James,Martinez,Terminated,2019-07-02,2021-05-17,1974-05-23,5,DL129100607,PA,A,Miami
+DRV00008,Barbara Wilson,Barbara,Wilson,Terminated,2020-06-09,2021-01-23,1978-12-28,15,DL190137896,CO,A,Philadelphia
+DRV00009,Karen Hernandez,Karen,Hernandez,Active,2013-09-29,,1989-02-22,13,DL790147183,FL,A,Los Angeles
+DRV00010,Sarah Gonzalez,Sarah,Gonzalez,Active,2020-11-08,,1974-05-26,23,DL560219456,WA,A,Minneapolis
+DRV00011,Michael Martinez,Michael,Martinez,Active,2014-06-01,,1972-07-04,15,DL245706210,FL,A,Dallas
+DRV00012,Robert Moore,Robert,Moore,Active,2013-09-12,,1994-04-21,25,DL595744935,MO,A,Nashville
+DRV00013,Jessica Jones,Jessica,Jones,Active,2015-11-21,,1969-05-27,3,DL295130056,WI,A,Philadelphia
+DRV00014,Richard Miller,Richard,Miller,Active,2021-01-10,,1969-02-02,11,DL153992714,FL,A,Salt Lake City
+DRV00015,Susan Wilson,Susan,Wilson,Active,2015-05-20,,1970-05-20,21,DL379340713,OH,A,Salt Lake City
+DRV00016,Thomas Gonzalez,Thomas,Gonzalez,Active,2017-04-09,,1978-08-04,11,DL507059676,GA,A,Kansas City
+DRV00017,William Garcia,William,Garcia,Active,2021-08-24,,1989-12-10,13,DL451492250,IN,A,Atlanta
+DRV00018,Patricia Martin,Patricia,Martin,Active,2021-09-01,,1985-05-17,5,DL327268503,PA,A,Chicago
+DRV00019,Robert Jackson,Robert,Jackson,Active,2020-12-14,,1994-08-15,20,DL588229686,TX,A,Seattle
+DRV00020,Joseph Martinez,Joseph,Martinez,Active,2019-07-21,,1965-10-02,18,DL450948014,TX,A,Houston
+DRV00021,Patricia Gonzalez,Patricia,Gonzalez,Terminated,2019-05-25,2021-05-23,1987-12-11,8,DL462388455,OK,A,New York
+DRV00022,Charles Moore,Charles,Moore,Active,2016-05-03,,1976-01-03,6,DL917364173,NV,A,Memphis
+DRV00023,David Smith,David,Smith,Active,2015-04-03,,1974-11-27,23,DL507083673,NC,A,Philadelphia
+DRV00024,Barbara Martinez,Barbara,Martinez,Active,2021-09-15,,1961-11-27,17,DL398775766,OH,A,Dallas
+DRV00025,Jessica Martinez,Jessica,Martinez,Active,2015-09-17,,1977-10-02,9,DL907464398,NE,A,Omaha
+DRV00026,Charles Miller,Charles,Miller,Active,2019-10-10,,1971-08-17,5,DL993271900,TX,A,Columbus
+DRV00027,Karen Wilson,Karen,Wilson,Terminated,2013-12-22,2015-03-16,1988-05-06,13,DL552651788,WI,A,Philadelphia
+DRV00028,Susan Jackson,Susan,Jackson,Active,2014-09-19,,1987-11-27,19,DL370874491,NC,A,Memphis
+DRV00029,James Martin,James,Martin,Active,2014-02-20,,1991-02-16,13,DL996478772,UT,A,Philadelphia
+DRV00030,Jessica Hernandez,Jessica,Hernandez,Active,2015-11-22,,1982-07-11,5,DL187946147,WI,A,Houston
+DRV00031,Charles Anderson,Charles,Anderson,Terminated,2017-04-19,2019-07-18,1980-11-04,10,DL604988121,NC,A,Seattle
+DRV00032,Michael Anderson,Michael,Anderson,Active,2019-07-14,,1970-06-14,20,DL120812641,MN,A,Omaha
+DRV00033,William Anderson,William,Anderson,Active,2016-12-19,,1991-05-22,9,DL904258674,GA,A,New York
+DRV00034,Thomas Miller,Thomas,Miller,Active,2015-05-25,,1985-09-02,15,DL679196799,TX,A,Kansas City
+DRV00035,Michael Taylor,Michael,Taylor,Active,2018-11-19,,1989-02-11,19,DL155926488,MI,A,Atlanta
+DRV00036,Michael Thomas,Michael,Thomas,Active,2012-12-04,,1976-06-04,21,DL475767056,TX,A,Miami
+DRV00037,Jessica Garcia,Jessica,Garcia,Active,2012-04-03,,1985-09-27,21,DL340756713,OR,A,New York
+DRV00038,William Williams,William,Williams,Active,2021-12-06,,1960-11-28,23,DL798086909,WI,A,New York
+DRV00039,Thomas Martinez,Thomas,Martinez,Active,2013-06-29,,1994-08-14,22,DL173678414,TX,A,Columbus
+DRV00040,Charles Taylor,Charles,Taylor,Terminated,2012-12-19,2014-05-14,1963-04-17,19,DL938842599,MI,A,Miami
+DRV00041,Karen Martin,Karen,Martin,Active,2020-03-19,,1983-10-25,2,DL799816232,TN,A,Phoenix
+DRV00042,Richard Hernandez,Richard,Hernandez,Terminated,2014-03-05,2015-09-07,1991-11-15,21,DL143226844,TN,A,Los Angeles
+DRV00043,Mary Williams,Mary,Williams,Active,2017-04-06,,1963-04-09,23,DL909851739,CO,A,Nashville
+DRV00044,Richard Davis,Richard,Davis,Active,2018-03-10,,1995-03-10,24,DL133318206,NC,A,Atlanta
+DRV00045,Thomas Martinez,Thomas,Martinez,Active,2018-11-20,,1988-12-16,10,DL365518424,OH,A,New York
+DRV00046,Susan Davis,Susan,Davis,Terminated,2020-04-05,2022-05-05,1967-01-21,2,DL314061901,IN,A,Atlanta
+DRV00047,Elizabeth Miller,Elizabeth,Miller,Active,2019-08-04,,1975-12-06,7,DL121882877,CO,A,Denver
+DRV00048,Thomas Jones,Thomas,Jones,Terminated,2013-06-10,2015-04-18,1979-09-01,10,DL767154083,NV,A,Houston
+DRV00049,John Smith,John,Smith,Active,2018-03-25,,1995-07-03,24,DL263619298,OK,A,Memphis
+DRV00050,Robert Johnson,Robert,Johnson,Active,2020-11-09,,1974-02-15,11,DL356135680,OH,A,Seattle
+DRV00051,Linda Davis,Linda,Davis,Active,2020-12-18,,1967-11-27,12,DL235528741,WA,A,Atlanta
+DRV00052,Thomas Thomas,Thomas,Thomas,Terminated,2017-09-28,2020-01-31,1969-08-23,13,DL608482316,CO,A,Phoenix
+DRV00053,John Martin,John,Martin,Active,2020-12-01,,1978-09-23,2,DL818825964,WI,A,Miami
+DRV00054,James Williams,James,Williams,Active,2017-12-23,,1977-07-27,7,DL222824732,MN,A,Chicago
+DRV00055,Mary Anderson,Mary,Anderson,Active,2012-07-01,,1990-08-08,6,DL705557720,FL,A,New York
+DRV00056,William Wilson,William,Wilson,Active,2018-02-23,,1989-09-05,20,DL334037646,MI,A,Oklahoma City
+DRV00057,Thomas Jackson,Thomas,Jackson,Active,2015-03-27,,1984-04-20,23,DL599326438,FL,A,Las Vegas
+DRV00058,David Miller,David,Miller,Active,2019-01-14,,1992-12-05,14,DL851044796,TX,A,Indianapolis
+DRV00059,Barbara Gonzalez,Barbara,Gonzalez,Active,2012-12-14,,1964-05-25,4,DL375139575,CA,A,Los Angeles
+DRV00060,Jessica Thomas,Jessica,Thomas,Active,2021-07-08,,1986-06-26,6,DL923450567,OK,A,Oklahoma City
+DRV00061,Linda Gonzalez,Linda,Gonzalez,Active,2013-10-27,,1992-05-27,25,DL496098177,PA,A,Dallas
+DRV00062,Jessica Davis,Jessica,Davis,Active,2016-11-07,,1960-05-24,22,DL280162221,WA,A,Charlotte
+DRV00063,James Jones,James,Jones,Active,2015-12-28,,1979-10-19,2,DL750572325,CA,A,Minneapolis
+DRV00064,Michael Smith,Michael,Smith,Active,2020-08-08,,1991-03-15,4,DL752027025,OK,A,Omaha
+DRV00065,Robert Brown,Robert,Brown,Active,2017-10-04,,1994-08-12,25,DL903079055,OH,A,Denver
+DRV00066,William Wilson,William,Wilson,Active,2021-02-13,,1981-09-25,18,DL871330207,NE,A,Indianapolis
+DRV00067,Jessica Davis,Jessica,Davis,Terminated,2015-10-24,2016-12-07,1994-07-15,8,DL222978730,WI,A,Memphis
+DRV00068,John Garcia,John,Garcia,Terminated,2018-09-19,2019-04-08,1980-04-23,14,DL935147672,AZ,A,Los Angeles
+DRV00069,Patricia Taylor,Patricia,Taylor,Active,2012-09-13,,1975-10-13,15,DL979717936,PA,A,Minneapolis
+DRV00070,Sarah Anderson,Sarah,Anderson,Active,2014-12-15,,1974-07-02,16,DL275842194,PA,A,Indianapolis
+DRV00071,Jessica Johnson,Jessica,Johnson,Active,2015-01-25,,1980-12-16,12,DL433975497,OK,A,Houston
+DRV00072,William Moore,William,Moore,Terminated,2012-01-28,2014-05-03,1984-07-22,7,DL216070149,NC,A,Kansas City
+DRV00073,Linda Davis,Linda,Davis,Terminated,2012-05-04,2013-01-08,1969-08-02,13,DL721358005,FL,A,Chicago
+DRV00074,William Brown,William,Brown,Active,2017-12-12,,1968-09-19,11,DL127571992,OK,A,Oklahoma City
+DRV00075,John Anderson,John,Anderson,Active,2015-07-13,,1981-02-28,25,DL434961542,TN,A,Nashville
+DRV00076,Charles Jones,Charles,Jones,Terminated,2019-11-06,2021-01-02,1988-02-17,12,DL718257024,NE,A,Indianapolis
+DRV00077,Patricia Anderson,Patricia,Anderson,Active,2014-02-07,,1989-01-24,20,DL827296111,IN,A,Detroit
+DRV00078,John Taylor,John,Taylor,Active,2021-03-23,,1969-07-28,21,DL502982778,MO,A,Minneapolis
+DRV00079,Patricia Moore,Patricia,Moore,Active,2021-06-28,,1969-02-16,4,DL525904456,MI,A,Salt Lake City
+DRV00080,Richard Martin,Richard,Martin,Active,2014-08-03,,1976-06-20,3,DL867741192,CA,A,Atlanta
+DRV00081,Joseph Hernandez,Joseph,Hernandez,Active,2019-06-13,,1985-11-03,6,DL312954978,PA,A,Chicago
+DRV00082,Michael Anderson,Michael,Anderson,Active,2013-05-02,,1981-11-28,7,DL181600593,MI,A,Charlotte
+DRV00083,Patricia Martin,Patricia,Martin,Active,2018-10-04,,1994-07-11,21,DL735760237,TX,A,Portland
+DRV00084,Jessica Taylor,Jessica,Taylor,Active,2021-02-09,,1991-09-02,3,DL841541582,CO,A,Las Vegas
+DRV00085,Linda Wilson,Linda,Wilson,Active,2012-05-30,,1964-04-21,23,DL991819497,AZ,A,Nashville
+DRV00086,Karen Moore,Karen,Moore,Terminated,2019-05-24,2021-09-24,1978-04-24,4,DL773496394,MI,A,Los Angeles
+DRV00087,William Anderson,William,Anderson,Active,2012-04-14,,1965-07-04,10,DL360757540,GA,A,Charlotte
+DRV00088,Joseph Garcia,Joseph,Garcia,Active,2020-11-14,,1966-08-06,16,DL209415691,WI,A,Milwaukee
+DRV00089,David Thomas,David,Thomas,Active,2017-09-28,,1979-01-02,23,DL848605284,OH,A,Minneapolis
+DRV00090,David Anderson,David,Anderson,Active,2018-11-20,,1980-01-10,15,DL929445037,NY,A,Dallas
+DRV00091,Linda Rodriguez,Linda,Rodriguez,Active,2016-12-01,,1982-06-14,17,DL423821937,FL,A,Dallas
+DRV00092,James Davis,James,Davis,Active,2014-11-16,,1969-04-17,21,DL834717549,IL,A,Seattle
+DRV00093,David Rodriguez,David,Rodriguez,Terminated,2012-08-25,2014-04-09,1986-10-22,16,DL744687060,IL,A,Kansas City
+DRV00094,Mary Taylor,Mary,Taylor,Active,2017-11-29,,1971-03-06,15,DL964929067,OH,A,New York
+DRV00095,Linda Thomas,Linda,Thomas,Active,2020-03-06,,1965-10-28,10,DL229981882,MI,A,Dallas
+DRV00096,Joseph Davis,Joseph,Davis,Terminated,2017-11-07,2018-11-18,1984-10-22,8,DL954942461,WI,A,New York
+DRV00097,Thomas Rodriguez,Thomas,Rodriguez,Active,2018-01-07,,1975-08-19,18,DL707665448,NY,A,Miami
+DRV00098,David Anderson,David,Anderson,Active,2019-08-27,,1969-04-15,5,DL940348305,UT,A,Kansas City
+DRV00099,Michael Williams,Michael,Williams,Active,2014-06-27,,1976-08-09,13,DL144097647,NE,A,Salt Lake City
+DRV00100,Jennifer Martinez,Jennifer,Martinez,Active,2019-01-04,,1960-08-10,15,DL472807202,NC,A,Memphis
+DRV00101,John Davis,John,Davis,Active,2014-02-18,,1994-03-03,5,DL672030854,CA,A,Columbus
+DRV00102,Elizabeth Rodriguez,Elizabeth,Rodriguez,Active,2014-05-04,,1988-06-19,11,DL559967386,GA,A,Milwaukee
+DRV00103,Joseph Hernandez,Joseph,Hernandez,Active,2014-09-26,,1979-11-14,23,DL810303128,TN,A,Seattle
+DRV00104,Richard Hernandez,Richard,Hernandez,Active,2021-03-15,,1976-08-28,23,DL497897455,MI,A,Portland
+DRV00105,Barbara Moore,Barbara,Moore,Active,2015-03-04,,1979-04-13,20,DL174041730,NC,A,Kansas City
+DRV00106,Patricia Williams,Patricia,Williams,Terminated,2014-11-19,2016-11-21,1990-02-08,17,DL643271261,NC,A,Indianapolis
+DRV00107,Charles Jones,Charles,Jones,Active,2020-02-01,,1984-10-12,18,DL795294275,MN,A,Detroit
+DRV00108,Joseph Jones,Joseph,Jones,Active,2016-01-06,,1978-12-10,23,DL466394187,WA,A,Minneapolis
+DRV00109,Joseph Davis,Joseph,Davis,Active,2013-10-29,,1961-11-13,11,DL113585139,AZ,A,Indianapolis
+DRV00110,James Gonzalez,James,Gonzalez,Active,2019-04-05,,1977-01-19,3,DL551034639,IL,A,Kansas City
+DRV00111,Richard Jones,Richard,Jones,Active,2020-03-03,,1963-10-24,9,DL982971099,FL,A,Las Vegas
+DRV00112,Jennifer Miller,Jennifer,Miller,Active,2016-10-26,,1991-05-25,14,DL626350075,NC,A,Los Angeles
+DRV00113,Mary Williams,Mary,Williams,Active,2017-09-30,,1974-10-26,21,DL213321496,CA,A,Milwaukee
+DRV00114,Thomas Wilson,Thomas,Wilson,Active,2018-12-23,,1982-04-21,3,DL565492204,TX,A,Los Angeles
+DRV00115,Robert Wilson,Robert,Wilson,Terminated,2014-10-29,2016-05-19,1972-10-09,2,DL488896443,OR,A,Salt Lake City
+DRV00116,Thomas Hernandez,Thomas,Hernandez,Terminated,2014-04-15,2015-11-15,1968-11-04,8,DL782454310,NC,A,Salt Lake City
+DRV00117,Patricia Moore,Patricia,Moore,Active,2015-10-04,,1962-05-26,11,DL989817696,TX,A,Omaha
+DRV00118,Susan Anderson,Susan,Anderson,Active,2019-07-17,,1988-01-19,8,DL593641365,TN,A,Columbus
+DRV00119,Jennifer Wilson,Jennifer,Wilson,Active,2014-04-29,,1983-12-05,6,DL859466878,UT,A,Oklahoma City
+DRV00120,Jessica Johnson,Jessica,Johnson,Active,2018-05-14,,1965-05-11,10,DL264272995,TN,A,Philadelphia
+DRV00121,Mary Miller,Mary,Miller,Active,2012-07-20,,1986-03-07,11,DL567600762,IL,A,Las Vegas
+DRV00122,James Wilson,James,Wilson,Active,2013-05-21,,1968-09-12,12,DL289125618,NY,A,Minneapolis
+DRV00123,Michael Gonzalez,Michael,Gonzalez,Active,2013-04-20,,1993-09-09,5,DL887906704,NY,A,Houston
+DRV00124,Thomas Jackson,Thomas,Jackson,Active,2021-05-17,,1970-05-27,2,DL660221300,TN,A,Las Vegas
+DRV00125,David Smith,David,Smith,Active,2019-06-08,,1990-05-24,17,DL798423334,MI,A,Seattle
+DRV00126,Sarah Jackson,Sarah,Jackson,Active,2012-10-14,,1981-02-15,25,DL389998761,TX,A,Minneapolis
+DRV00127,Thomas Gonzalez,Thomas,Gonzalez,Active,2021-08-23,,1964-03-25,15,DL761330848,TX,A,Portland
+DRV00128,John Thomas,John,Thomas,Active,2012-12-22,,1974-11-24,7,DL967797300,CA,A,Las Vegas
+DRV00129,Michael Smith,Michael,Smith,Active,2018-06-19,,1985-09-12,6,DL677858758,OH,A,Oklahoma City
+DRV00130,Karen Lopez,Karen,Lopez,Active,2017-07-03,,1965-07-01,14,DL931764920,NE,A,Los Angeles
+DRV00131,Linda Martinez,Linda,Martinez,Terminated,2019-01-01,2021-02-17,1976-09-04,19,DL619151495,NV,A,Seattle
+DRV00132,Patricia Gonzalez,Patricia,Gonzalez,Active,2021-04-05,,1989-06-22,24,DL599154414,MO,A,Las Vegas
+DRV00133,Mary Wilson,Mary,Wilson,Active,2019-08-21,,1976-10-13,9,DL567694547,MO,A,Seattle
+DRV00134,Linda Moore,Linda,Moore,Active,2015-08-23,,1983-02-22,18,DL986625773,MO,A,Nashville
+DRV00135,Karen Moore,Karen,Moore,Terminated,2012-03-05,2014-02-03,1974-08-01,19,DL884933416,TX,A,Miami
+DRV00136,Susan Martin,Susan,Martin,Terminated,2013-12-14,2014-12-19,1995-06-20,23,DL736164778,NE,A,Denver
+DRV00137,Michael Davis,Michael,Davis,Terminated,2018-06-23,2019-02-27,1974-11-03,13,DL388187517,IN,A,New York
+DRV00138,Jennifer Thomas,Jennifer,Thomas,Active,2019-08-15,,1989-12-10,4,DL446071904,OR,A,Nashville
+DRV00139,Sarah Davis,Sarah,Davis,Active,2014-08-27,,1986-02-05,14,DL363598427,MN,A,Charlotte
+DRV00140,Richard Rodriguez,Richard,Rodriguez,Terminated,2016-05-28,2018-06-30,1962-01-10,25,DL991990632,MN,A,Dallas
+DRV00141,Thomas Wilson,Thomas,Wilson,Active,2017-07-26,,1991-02-04,3,DL193053577,MI,A,Dallas
+DRV00142,John Thomas,John,Thomas,Active,2012-01-31,,1975-09-05,15,DL399496923,TN,A,Dallas
+DRV00143,Linda Smith,Linda,Smith,Active,2014-10-17,,1984-08-12,2,DL584044963,NV,A,Dallas
+DRV00144,James Gonzalez,James,Gonzalez,Active,2016-11-09,,1994-07-19,16,DL361846370,MI,A,Las Vegas
+DRV00145,Susan Hernandez,Susan,Hernandez,Active,2020-05-26,,1969-07-21,4,DL905817775,TN,A,Los Angeles
+DRV00146,Jessica Gonzalez,Jessica,Gonzalez,Active,2019-01-13,,1966-08-20,12,DL598976917,MO,A,Oklahoma City
+DRV00147,Richard Garcia,Richard,Garcia,Active,2020-06-09,,1986-05-02,20,DL711871397,IL,A,Oklahoma City
+DRV00148,Patricia Anderson,Patricia,Anderson,Active,2019-03-28,,1983-04-15,15,DL755338677,MO,A,Denver
+DRV00149,Linda Jones,Linda,Jones,Active,2013-08-25,,1988-04-28,20,DL817461907,OK,A,New York
+DRV00150,Robert Martin,Robert,Martin,Active,2015-09-16,,1983-02-22,14,DL506936666,CA,A,Columbus
