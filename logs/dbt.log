@@ -167,3 +167,16 @@ https://docs.getdbt.com/docs/configure-your-profile
 [0m09:28:29.009330 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7e5543af9d90>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7e5543512390>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7e5543511730>]}
 [0m09:28:29.010180 [debug] [MainThread]: Flushing usage events
 [0m09:28:30.172966 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m06:23:55.391596 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7911ce931a90>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7911cc22ac00>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7911cc22b860>]}
+
+
+============================== 06:23:55.398667 | e9838e33-3e5e-42cf-b195-086d7e1e8c91 ==============================
+[0m06:23:55.398667 [info ] [MainThread]: Running with dbt=1.12.3
+[0m06:23:55.399771 [debug] [MainThread]: running dbt with arguments {'invocation_command': 'dbt init fiveGexpress_duckdb', 'log_format': 'default', 'quiet': 'False', 'fail_fast': 'False', 'hints_enabled': 'True', 'introspect': 'True', 'version_check': 'True', 'log_cache_events': 'False', 'maximum_seed_size_mib': '1', 'write_json': 'True', 'warn_error': 'None', 'debug': 'False', 'target_path': 'None', 'use_colors': 'True', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'send_anonymous_usage_stats': 'True', 'empty': 'None', 'log_path': 'logs', 'cache_selected_only': 'False', 'no_print': 'None', 'static_parser': 'True', 'indirect_selection': 'eager', 'profiles_dir': '/home/codespace/.dbt', 'use_experimental_parser': 'False', 'partial_parse': 'True', 'printer_width': '80'}
+[0m06:23:55.422911 [info ] [MainThread]: Creating dbt configuration folder at /home/codespace/.dbt
+[0m06:23:55.426883 [info ] [MainThread]: A project called fiveGexpress_duckdb already exists here.
+[0m06:23:55.454578 [debug] [MainThread]: Resource report: {"command_name": "init", "command_success": true, "command_wall_clock_time": 0.25035408, "process_in_blocks": "18968", "process_kernel_time": 0.225171, "process_mem_max_rss": "110888", "process_out_blocks": "8", "process_user_time": 1.754176}
+[0m06:23:55.457944 [debug] [MainThread]: Command `dbt init` succeeded at 06:23:55.457191 after 0.25 seconds
+[0m06:23:55.460979 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7911cc0ae8a0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7911ce86fdd0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7911cc07ef30>]}
+[0m06:23:55.463362 [debug] [MainThread]: Flushing usage events
+[0m06:23:56.282152 [debug] [MainThread]: An error was encountered while trying to flush usage events
