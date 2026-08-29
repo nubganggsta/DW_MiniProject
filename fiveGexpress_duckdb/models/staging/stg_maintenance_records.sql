@@ -1,6 +1,6 @@
-with raw as (
+with source as (
     select *
-    from read_csv_auto('{{ target.path | replace("/dev.duckdb", "/datasets/maintenance_records.csv") }}', header = true, nullstr = '')
+    from read_csv_auto('datasets/maintenance_records.csv', header = true, nullstr = '')
 ), cleaned as (
     select
         nullif(trim(maintenance_id), '') as maintenance_id,
@@ -16,7 +16,7 @@ with raw as (
         try_cast(downtime_hours as double) as downtime_hours,
         nullif(trim(service_description), '') as service_description,
         current_localtimestamp() as ingestion_timestamp
-    from raw
+    from source
     where nullif(trim(maintenance_id), '') is not null
     qualify row_number() over (
         partition by trim(maintenance_id)

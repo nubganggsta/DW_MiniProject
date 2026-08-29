@@ -15,7 +15,7 @@ stg_cleaned as (
         cast(acquisition_date as date) as acquisition_date,
         cast(acquisition_mileage as integer) as acquisition_mileage,
         trim(fuel_type) as fuel_type,
-        cast(tank_capa as integer) as tank_capacity,
+        cast(tank_capacity_gallons as integer) as tank_capacity,
         trim(status) as status,
         trim(upper(home_terminal)) as home_terminal,
         current_localtimestamp() as ingestion_timestamp

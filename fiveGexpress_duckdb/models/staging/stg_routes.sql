@@ -1,6 +1,6 @@
-with raw as (
+with source as (
     select *
-    from read_csv_auto('{{ target.path | replace("/dev.duckdb", "/datasets/routes.csv") }}', header = true, nullstr = '')
+    from read_csv_auto('datasets/routes.csv', header = true, nullstr = '')
 ), cleaned as (
     select
         nullif(trim(route_id), '') as route_id,
@@ -13,7 +13,7 @@ with raw as (
         try_cast(fuel_surcharge_rate as double) as fuel_surcharge_rate,
         try_cast(typical_transit_days as integer) as typical_transit_days,
         current_localtimestamp() as ingestion_timestamp
-    from raw
+    from source
     where nullif(trim(route_id), '') is not null
     qualify row_number() over (
         partition by trim(route_id)
