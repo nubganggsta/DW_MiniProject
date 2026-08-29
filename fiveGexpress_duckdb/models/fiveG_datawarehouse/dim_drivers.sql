@@ -8,18 +8,12 @@ with stg_drivers as (
 
 dim_calculated as (
     select
-        -- 1. Surrogate Key
         md5(cast(driver_id as {{ dbt.type_string() }})) as driver_sk,
-        
-        -- 2. Business Key
         driver_id,
-        
-        -- 3. Name Attributes
         concat(coalesce(first_name, ''), ' ', coalesce(last_name, '')) as full_name,
         first_name,
         last_name,
         
-        -- 4. Status Flag
         case 
             when termination_date is null and lower(employment_status) = 'active' then true 
             else false 
@@ -29,18 +23,19 @@ dim_calculated as (
         hire_date,
         termination_date,
         
-        -- 5. Tenure Calculation (ปรับการรองรับกรณีวันติดลบ/ทศนิยม)
+        -- แก้ไข: เพิ่ม 'day' เป็น Parameter แรก และสลับตำแหน่ง start_date, end_date
         round(
             datediff(
-                coalesce(termination_date, current_date()), 
-                hire_date
+                'day', 
+                hire_date, 
+                coalesce(termination_date, current_date())
             ) / 365.25, 2
         ) as tenure_years,
         
         date_of_birth,
         
-        -- 6. Age Calculation (ปัดเศษลงเป็นจำนวนเต็ม)
-        floor(datediff(current_date(), date_of_birth) / 365.25) as age,
+        -- แก้ไข: เพิ่ม 'day' ในการคำนวณอายุ
+        floor(datediff('day', date_of_birth, current_date()) / 365.25) as age,
         
         years_experience,
         license_number,
