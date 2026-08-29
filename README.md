@@ -43,7 +43,7 @@ Phlapapon Kulto 673020626-9
     
 
 ## Data Model Diagram
-
+<img width="1942" height="1301" alt="Logistic_DataWarehouse-ER_OLTP" src="https://github.com/user-attachments/assets/fc02de57-2230-4ca9-8df6-9b931b5ad4cd" />
 ## ETL หรือ ELT Process
 
 ## Data Warehouse Database
