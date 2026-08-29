@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: stg_routes
+    description: Cleaned route reference data loaded from datasets/routes.csv.
+    columns:
+      - name: route_id
+        data_tests:
+          - unique
+          - not_null
+      - name: origin_city
+        data_tests:
+          - not_null
+      - name: destination_city
+        data_tests:
+          - not_null
+      - name: typical_distance_miles
+        data_tests:
+          - not_null
+      - name: base_rate_per_mile
+        data_tests:
+          - not_null
+
+  - name: stg_maintenance_records
+    description: Cleaned maintenance records loaded from datasets/maintenance_records.csv.
+    columns:
+      - name: maintenance_id
+        data_tests:
+          - unique
+          - not_null
+      - name: truck_id
+        data_tests:
+          - not_null
+      - name: maintenance_date
+        data_tests:
+          - not_null
+      - name: total_cost
+        data_tests:
+          - not_null
