@@ -44,6 +44,35 @@ models:
           - unique
           - not_null
 
+  - name: dim_customers
+    description: "ตารางมิติข้อมูลลูกค้า"
+    columns:
+      - name: customer_id
+        tests:
+          - unique
+          - not_null
+      - name: customer_name
+        tests:
+          - not_null
+      - name: account_status
+        tests:
+          - not_null
+
+  - name: dim_trucks
+    description: "ตารางมิติข้อมูลรถบรรทุก"
+    columns:
+      - name: truck_sk
+        tests:
+          - unique
+          - not_null
+      - name: truck_id
+        tests:
+          - unique
+          - not_null
+      - name: status
+        tests:
+          - not_null
+
   # ==================================================================
   # FACT TABLES (มีไฟล์จริง 3 ตาราง)
   # ==================================================================
