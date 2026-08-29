@@ -61,6 +61,7 @@ Primary_freight_type: ประเภทสินค้าหลักที่�
 Account_status: สถานะบัญชีลูกค้า (เช่น Active, Inactive)
 Contract_starts_date: วันเริ่มสัญญา
 Annual_revenue_potential: ประมาณการรายได้ต่อปีจากลูกค้ารายนี้
+
 Facilities (ศูนย์กระจายสินค้า/คลังสินค้า)
 Facility_id: รหัสสถานที่ (PK)
 Facility_name: ชื่อศูนย์/คลังสินค้า
@@ -76,6 +77,7 @@ Typical_distance_miles: ระยะทางมาตรฐาน (ไมล์
 Base_rate_per_mile: ค่าบริการพื้นฐานต่อไมล์
 Fuel_surcharge_rate: อัตราค่าธรรมเนียมน้ำมันผันแปร
 Typical_transit_days: ระยะเวลาเดินทางมาตรฐาน (วัน)
+
 Drivers (ข้อมูลพนักงานขับรถ)
 Driver_id: รหัสพนักงานขับรถ (PK)
 First_name / Last_name: ชื่อ-นามสกุล
@@ -92,6 +94,7 @@ Vin: เลขตัวรถ (Vehicle Identification Number)
 Acquisition_date / Acquisition_mileage: วันที่จัดซื้อ และเลขไมล์ ณ วันซื้อ
 Fuel_type / Tank_capacity_gallons: ประเภทน้ำมัน และความจุถังน้ำมัน (แกลลอน)
 Status: สถานะรถ (เช่น พร้อมใช้งาน, ซ่อมบำรุง)
+
 Trailers (ข้อมูลหางลาก/ตู้พ่วง)
 Trailer_id: รหัสหางลาก (PK)
 Trailer_number / Trailer_type: หมายเลขหางลาก และประเภทตู้ (เช่น Dry Van, Reefer)
@@ -99,13 +102,15 @@ Length_feet: ความยาวตู้ (ฟุต)
 Model_year / Vin: ปีที่ผลิต และเลขตัวถัง
 Acquisition_date: วันที่จัดซื้อ
 Status / Current_location: สถานะใช้งาน และสถานที่อยู่ปัจจุบัน
-2. กลุ่มรายการปฏิบัติการและค่าใช้จ่าย (Transactional Data) บันทึกเหตุการณ์ที่เกิดขึ้นจริงในการทำงานแต่ละวัน
+
+3. กลุ่มรายการปฏิบัติการและค่าใช้จ่าย (Transactional Data) บันทึกเหตุการณ์ที่เกิดขึ้นจริงในการทำงานแต่ละวัน
 Loads (ใบสั่งงาน/ภาระสินค้า)
 Load_id: รหัสใบสั่งงาน (PK)
 Load_date: วันที่รับออเดอร์
 Load_type: ประเภทการบรรทุก (เช่น Full Truckload - FTL)
 Weight_lbs / Pieces: น้ำหนัก (ปอนด์) และจำนวนชิ้นสินค้า
 Revenue / Fuel_surcharge / Accessorial_charges: ค่าขนส่งหลัก, ค่าธรรมเนียมน้ำมัน, และค่าบริการเพิ่มเติม
+
 Trips (เที่ยววิ่งจริง)
 Trip_id: รหัสเที่ยววิ่ง (PK)
 Dispatch_date: วันที่ปล่อยรถออกปฏิบัติงาน
@@ -113,6 +118,7 @@ Actual_distance_miles / Actual_duration_hours: ระยะทางจริง
 Fuel_gallons_used / Average_mpg: ปริมาณน้ำมันที่ใช้ และอัตราสิ้นเปลืองเฉลี่ย (ไมล์/แกลลอน)
 Idle_time_hours: เวลาที่จอดสตาร์ทเครื่องทิ้งไว้
 Trip_status: สถานะเที่ยววิ่ง (เช่น Completed, In Transit)
+
 Delivery_events (สถานะจุดรับ-ส่งสินค้า)
 Event_id: รหัสเหตุการณ์ (PK)
 Event_type: ประเภทเหตุการณ์ (เช่น Pickup, Delivery)
@@ -120,6 +126,7 @@ Scheduled_datetime / Actual_datetime: เวลาที่นัดหมาย
 Detention_minutes: เวลาที่ต้องรอคอย ณ จุดรับส่ง (นาที)
 On_time_flag: ตัวชี้วัดการตรงต่อเวลา (Yes/No)
 Location_city: เมืองที่เกิดเหตุการณ์
+
 Fuel_purchases (ประวัติการเติมน้ำมัน)
 Fuel_purchases_id: รหัสการซื้อน้ำมัน (PK)
 Purchase_date: วันที่ซื้อ
@@ -132,13 +139,14 @@ Maintenance_date / Maintenance_type: วันที่ซ่อม และป
 Odometer_reading: เลขไมล์ขณะเข้าซ่อม
 Labor_hours / Labor_cost / Parts_cost / Total_cost: ชั่วโมงแรงงานช่าง, ค่าแรง, ค่าอะไหล่ และราคารวม
 Facility_location: สถานที่ซ่อมบำรุง
+
 Safety_incidents (บันทึกอุบัติเหตุและความเสี่ยง)
 Incident_id: รหัสเหตุการณ์อุบัติเหตุ (PK)
 Incident_date / Incident_type: วันที่เกิดเหตุ และประเภทอุบัติเหตุ
 Location_city: เมืองที่เกิดเหตุ
 At_fault_flag: ตัวระบุความผิด (ใช่/ไม่ใช่)
 Injury_flag: ตัวระบุการบาดเจ็บ (มี/ไม่มี)
-3. กลุ่มข้อมูลสรุปตัววัดผล (Aggregated Analytics Data) ตารางคำนวณสรุปรายเดือนเพื่อใช้ทำ KPI แดชบอร์ด และรายงานผู้บริหาร
+4. กลุ่มข้อมูลสรุปตัววัดผล (Aggregated Analytics Data) ตารางคำนวณสรุปรายเดือนเพื่อใช้ทำ KPI แดชบอร์ด และรายงานผู้บริหาร
 Driver_monthly_metrics (สรุปผลงานคนขับรายเดือน)
 Driver_id + Month: รหัสพนักงาน และเดือนที่สรุป (Composite Keys)
 Trips_completed / Total_miles: จำนวนเที่ยววิ่งที่สำเร็จ และระยะทางรวม
@@ -146,6 +154,7 @@ Total_revenue: รายได้รวมที่คนขับทำได�
 Average_mpg / Total_fuel_gallons: ประสิทธิภาพประหยัดน้ำมันเฉลี่ย และปริมาณน้ำมันรวม
 On_time_delivery_rate: อัตราการส่งสินค้าตรงเวลา (%)
 Average_idle_hours: เวลาจอดติดเครื่องเฉลี่ย
+
 Truck_utilization_metrics (สรุปการใช้งานรถบรรทุกรายเดือน)
 Truck_id + Month: รหัสรถบรรทุก และเดือนที่สรุป (Composite Keys)
 Trips_completed / Total_miles / Total_revenue: งานรวม, ระยะทางรวม, รายได้รวมของรถคันนั้น
@@ -153,13 +162,17 @@ Average_mpg: อัตราสิ้นเปลืองน้ำมันเ�
 Maintenance_events / Maintenance_cost: จำนวนครั้งเข้าซ่อม และค่าซ่อมบำรุงรวม
 Downtime_hours: จำนวนชั่วโมงที่รถต้องจอดซ่อม (ใช้งานไม่ได้)
 Utilization_rate: อัตราการถูกนำไปใช้งานจริงเทียบกับเวลาทั้งหมด (%)
+
 ### การดำเนินงานของธุรกิจ Logistics
 Step 1: ตั้งต้นจากลูกค้าและการจองงาน (Demand Generation)
 เริ่มที่ Customers สั่งงานเกิดเป็น Loads ผ่าน Routes และ Facilities
+
 Step 2: การจัดสรรทรัพยากร (Execution Setup)
 อธิบายว่า Loads ถูกแปลงเป็น Trips โดยจับคู่ทรัพยากร 3 อย่างเข้าด้วยกันคือ Drivers + Trucks + Trailers
+
 Step 3: บันทึกเหตุการณ์ระหว่างทาง (Operational Events & Expenses)
 การวิ่งรถสร้างข้อมูล 3 ด้าน: เวลาจัดส่ง (Delivery Events), ต้นทุนผันแปร (Fuel Purchases), และความเสี่ยง (Maintenance Records & Safety Incidents)
+
 Step 4: การวัดผลทางธุรกิจ (Business Intelligence Output)
 สรุปข้อมูลธุรกรรมทั้งหมดกลับมาเป็น Driver Monthly Metrics และ Truck Utilization Metrics เพื่อตอบโจทย์บริหาร เช่น การวัด Fleet Utilization (เฉลี่ย 65%) หรือ Driver Turnover Rate (15%)
 
