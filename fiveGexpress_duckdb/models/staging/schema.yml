@@ -37,3 +37,4 @@ models:
       - name: total_cost
         data_tests:
           - not_null
+
