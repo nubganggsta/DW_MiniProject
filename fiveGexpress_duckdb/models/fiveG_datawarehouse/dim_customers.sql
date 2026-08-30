@@ -11,14 +11,14 @@ with customers as (
 
 select
     -- Primary Key (Surrogate Key)
-    md5(cast(customer_id as {{ dbt.type_string() }})) as Customer_Key,
+    md5(cast(customer_id as {{ dbt.type_string() }})) as customer_key,
 
     -- Business Key & Attributes
-    customer_id as Customer_ID,
-    customer_name as Customer_Name,
-    customer_type as Customer_Type,
-    credit_terms_days as Payment_Terms,
-    primary_freight_type as Primary_Freight,
+    customer_id as customer_id,
+    customer_name as customer_name,
+    customer_type as customer_type,
+    credit_terms_days as payment_terms,
+    primary_freight_type as primary_freight,
     account_status as Status
 
 from customers
