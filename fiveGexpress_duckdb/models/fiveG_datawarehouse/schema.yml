@@ -69,15 +69,15 @@ models:
   - name: dim_trucks
     description: "ตารางมิติข้อมูลรถบรรทุก"
     columns:
-      - name: truck_sk
+      - name: Truck_Key
         tests:
           - unique
           - not_null
-      - name: truck_id
+      - name: Truck_ID
         tests:
           - unique
           - not_null
-      - name: status
+      - name: Status
         tests:
           - not_null
 
