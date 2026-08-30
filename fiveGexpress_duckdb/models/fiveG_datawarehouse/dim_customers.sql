@@ -8,7 +8,7 @@ with customers as (
     from {{ ref('stg_customers') }}
 
 )
-
+ 
 select
     -- Primary Key (Surrogate Key)
     md5(cast(customer_id as {{ dbt.type_string() }})) as customer_key,
