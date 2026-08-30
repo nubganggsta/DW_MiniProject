@@ -39,6 +39,10 @@ models:
   - name: dim_route
     description: "ตารางมิติเส้นทาง"
     columns:
+      - name: route_sk
+        tests:
+          - unique
+          - not_null
       - name: route_id
         tests:
           - unique
@@ -69,11 +73,11 @@ models:
         tests:
           - unique
           - not_null
-      - name: truck_id
+      - name: Truck_ID
         tests:
           - unique
           - not_null
-      - name: status
+      - name: Status
         tests:
           - not_null
 
