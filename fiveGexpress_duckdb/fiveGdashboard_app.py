@@ -1,7 +1,8 @@
+import duckdb
 import pandas as pd
 import plotly.express as px
+import plotly.io as pio
 import streamlit as st
-import duckdb
 
 # =========================================================
 # 1. Page Config & Custom Styling (Global Design System)
@@ -13,14 +14,45 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Custom Design System CSS
+# ---------------------------------------------------------
+# ตั้งค่า Font Kanit ให้กับ Plotly Charts ทุกรูปในระบบ
+# ---------------------------------------------------------
+pio.templates.default = "plotly"
+pio.templates["plotly"].layout.font.family = "Kanit, sans-serif"
+
+# Custom Design System CSS (รวม Kanit Font, Color Palette & Layout)
 st.markdown(
     """
     <style>
-    .stApp { background-color: #f8f9fa; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
+    /* Import Google Font - Kanit */
+    @import url('https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+
+    /* บังคับใช้ Kanit กับทุกองค์ประกอบ */
+    * {
+        font-family: 'Kanit', sans-serif !important;
+    }
     
+    html, body, [class*="css"], .stApp, button, input, select, textarea, div, span, p, h1, h2, h3, h4, h5, h6 {
+        font-family: 'Kanit', sans-serif !important;
+    }
+
+    .stApp { 
+        background-color: #f8f9fa; 
+    }
+    
+    #MainMenu { visibility: hidden; }
+    footer { visibility: hidden; }
+    
+    /* Header Image Styling */
+    .main-header-img {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 100%;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
     /* KPI Card System */
     .kpi-card {
         background-color: #ffffff;
@@ -30,10 +62,36 @@ st.markdown(
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
         margin-bottom: 12px;
     }
-    .kpi-title { font-size: 13px; color: #6c757d; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-    .kpi-value { font-size: 26px; font-weight: 700; color: #1a1d20; margin-top: 4px; margin-bottom: 2px; }
-    .kpi-sub { font-size: 12px; color: #43CD80; font-weight: 500; }
-    .kpi-sub-risk { font-size: 12px; color: #EE0000; font-weight: 500; }
+    .kpi-title { 
+        font-size: 13px; 
+        color: #6c757d; 
+        font-weight: 600; 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px; 
+        font-family: 'Kanit', sans-serif !important;
+    }
+    .kpi-value { 
+        font-size: 26px; 
+        font-weight: 700; 
+        color: #1a1d20; 
+        margin-top: 4px; 
+        margin-bottom: 2px; 
+        font-family: 'Kanit', sans-serif !important;
+    }
+    /* โทนสีเขียว #8CC7C4 */
+    .kpi-sub { 
+        font-size: 12px; 
+        color: #8CC7C4; 
+        font-weight: 600; 
+        font-family: 'Kanit', sans-serif !important;
+    }
+    /* โทนสีแดง #DB1A1A */
+    .kpi-sub-risk { 
+        font-size: 12px; 
+        color: #DB1A1A; 
+        font-weight: 600; 
+        font-family: 'Kanit', sans-serif !important;
+    }
     
     /* Section Headers */
     .section-header {
@@ -42,16 +100,25 @@ st.markdown(
         color: #212529;
         margin-top: 5px;
         margin-bottom: 15px;
-        border-left: 4px solid #EE0000;
+        border-left: 4px solid #DB1A1A;
         padding-left: 10px;
+        font-family: 'Kanit', sans-serif !important;
     }
     
     /* Utility Styles */
-    div[data-testid="stMetricValue"] { font-size: 24px; font-weight: 700; }
+    div[data-testid="stMetricValue"] { 
+        font-size: 24px; 
+        font-weight: 700; 
+        font-family: 'Kanit', sans-serif !important;
+    }
     </style>
 """,
     unsafe_allow_html=True,
 )
+
+# Banner Header
+header_logo_url = "https://via.placeholder.com/1200x180/1a1d20/ffffff?text=5G+EXPRESS+LOGISTICS+ANALYTICS"
+st.image(header_logo_url, use_container_width=True)
 
 
 # Reusable Helper Component for KPI Cards
@@ -83,7 +150,8 @@ except Exception as e:
     st.error(f"⚠️ ไม่สามารถเชื่อมต่อกับ Data Warehouse ได้: {e}")
     st.stop()
 
-# Helper Function สำหรับรัน SQL อย่างปลอดภัย
+
+# Helper Function สำหรับรัน SQL
 def run_query(sql_query):
     try:
         return conn.query(sql_query).df()
@@ -137,30 +205,25 @@ if menu == "📈 ภาพรวมการดำเนินงาน (Executi
     st.markdown("<br>", unsafe_allow_html=True)
 
     # 1. KPI Calculation
-    rev_val = (
-        run_query(
-            f"SELECT SUM(f.revenue) FROM fact_loads f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {year_clause}"
-        ).iloc[0, 0]
-        or 0
+    rev_res = run_query(
+        f"SELECT COALESCE(SUM(f.revenue), 0) FROM fact_loads f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {year_clause}"
     )
-    delivery_count = (
-        run_query(
-            f"SELECT COUNT(*) FROM fact_delivery f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {year_clause}"
-        ).iloc[0, 0]
-        or 0
+    rev_val = rev_res.iloc[0, 0] if not rev_res.empty else 0
+
+    del_res = run_query(
+        f"SELECT COUNT(*) FROM fact_delivery f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {year_clause}"
     )
-    trip_count = (
-        run_query(
-            f"SELECT COUNT(*) FROM fact_trips f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {year_clause}"
-        ).iloc[0, 0]
-        or 0
+    delivery_count = del_res.iloc[0, 0] if not del_res.empty else 0
+
+    trip_res = run_query(
+        f"SELECT COUNT(*) FROM fact_trips f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {year_clause}"
     )
-    fuel_cost = (
-        run_query(
-            f"SELECT SUM(f.total_cost) FROM fact_fuel f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {year_clause}"
-        ).iloc[0, 0]
-        or 0
+    trip_count = trip_res.iloc[0, 0] if not trip_res.empty else 0
+
+    fuel_res = run_query(
+        f"SELECT COALESCE(SUM(f.total_cost), 0) FROM fact_fuel f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {year_clause}"
     )
+    fuel_cost = fuel_res.iloc[0, 0] if not fuel_res.empty else 0
 
     c1, c2, c3, c4 = st.columns(4)
     with c1:
@@ -187,7 +250,7 @@ if menu == "📈 ภาพรวมการดำเนินงาน (Executi
 
     col_chart1, col_chart2 = st.columns([1.6, 1])
 
-    # 2. Monthly / Yearly Fuel Cost Trend (Req 2.2)
+    # 2. Monthly Fuel Cost Trend
     with col_chart1:
         st.markdown(
             '<div class="section-header">แนวโน้มค่าใช้จ่ายน้ำมันรายเดือน (Monthly Fuel Cost Trend)</div>',
@@ -209,7 +272,7 @@ if menu == "📈 ภาพรวมการดำเนินงาน (Executi
                 x="month_name",
                 y="monthly_fuel_cost",
                 markers=True,
-                color_discrete_sequence=["#EE0000"],
+                color_discrete_sequence=["#DB1A1A"],
                 labels={
                     "month_name": "เดือน",
                     "monthly_fuel_cost": "ค่าน้ำมัน (฿)",
@@ -224,7 +287,7 @@ if menu == "📈 ภาพรวมการดำเนินงาน (Executi
         else:
             st.info("ไม่พบข้อมูลค่าใช้จ่ายน้ำมันในช่วงเวลาที่เลือก")
 
-    # 3. Full Pie Chart for On-Time Ratio (Req 2.1 - No Donut)
+    # 3. On-Time Ratio
     with col_chart2:
         st.markdown(
             '<div class="section-header">สัดส่วนการส่งตรงเวลา (On-Time Ratio)</div>',
@@ -245,14 +308,16 @@ if menu == "📈 ภาพรวมการดำเนินงาน (Executi
                 df_ontime,
                 names="status",
                 values="count",
-                hole=0,  # Full Pie Chart (No Donut)
+                hole=0,
                 color="status",
                 color_discrete_map={
-                    "ตรงเวลา (On Time)": "#43CD80",
-                    "ล่าช้า (Late)": "#EE0000",
+                    "ตรงเวลา (On Time)": "#8CC7C4",
+                    "ล่าช้า (Late)": "#DB1A1A",
                 },
             )
-            fig_pie.update_traces(textposition="inside", textinfo="percent+label")
+            fig_pie.update_traces(
+                textposition="inside", textinfo="percent+label"
+            )
             fig_pie.update_layout(
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
@@ -269,7 +334,6 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
     st.caption("เจาะลึกที่มารายได้เปรียบเทียบรายปี ลูกค้าหลัก และเส้นทางยอดนิยม")
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Dynamic Top Customer & Top Route (Req 3.1, 3.2, 3.3)
     df_top_cust = run_query(f"""
         SELECT c.customer_name, SUM(f.revenue) as total_revenue
         FROM fact_loads f 
@@ -304,16 +368,15 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
         df_top_route.iloc[0]["total_loads"] if not df_top_route.empty else 0
     )
 
-    # Top Section Summary (Req 3.4 Layout)
     col_kpi1, col_kpi2, col_kpi3 = st.columns(3)
     with col_kpi1:
-        rev_tot = (
-            run_query(
-                f"SELECT SUM(f.revenue) FROM fact_loads f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {year_clause}"
-            ).iloc[0, 0]
-            or 0
+        rev_tot_res = run_query(
+            f"SELECT COALESCE(SUM(f.revenue), 0) FROM fact_loads f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {year_clause}"
         )
-        render_kpi_card("รายได้รวมตามตัวกรอง", f"฿{rev_tot:,.2f}", "Total Revenue")
+        rev_tot = rev_tot_res.iloc[0, 0] if not rev_tot_res.empty else 0
+        render_kpi_card(
+            "รายได้รวมตามตัวกรอง", f"฿{rev_tot:,.2f}", "Total Revenue"
+        )
     with col_kpi2:
         render_kpi_card(
             "ลูกค้าที่สร้างรายได้สูงสุด (Top Customer)",
@@ -345,7 +408,7 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
             x="year",
             y="total_revenue",
             text_auto=".3s",
-            color_discrete_sequence=["#43CD80"],
+            color_discrete_sequence=["#8CC7C4"],
             labels={"year": "ปี", "total_revenue": "รายได้รวม (฿)"},
         )
         fig_y.update_layout(
@@ -402,7 +465,7 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
         x="route_id",
         y="total_loads",
         text_auto=True,
-        color_discrete_sequence=["#43CD80"],
+        color_discrete_sequence=["#8CC7C4"],
         labels={"route_id": "รหัสเส้นทาง", "total_loads": "จำนวน Load"},
     )
     fig_route.update_layout(
@@ -419,7 +482,7 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
     st.caption("ติดตามการใช้งานรถบรรทุก สถิติการวิ่ง และต้นทุนการบำรุงรักษา")
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Local Year & Month Filter (Req 4.2, 4.3)
+    # Local Year & Month Filter
     st.markdown(
         '<div class="section-header">ตัวกรองเวลาค่าซ่อมบำรุง (Maintenance Filter)</div>',
         unsafe_allow_html=True,
@@ -427,21 +490,29 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
     col_f1, col_f2 = st.columns(2)
 
     df_maint_years = run_query(
-        "SELECT DISTINCT year FROM dim_date WHERE year IS NOT NULL ORDER BY year DESC"
+        "SELECT DISTINCT d.year FROM fact_maintenance f JOIN dim_date d ON f.date_key = d.date_key WHERE d.year IS NOT NULL ORDER BY d.year DESC"
     )
     maint_years = (
-        df_maint_years["year"].tolist() if not df_maint_years.empty else [2026]
+        df_maint_years["year"].tolist() if not df_maint_years.empty else []
     )
     maint_years.insert(0, "ทั้งหมด")
 
     with col_f1:
         sel_maint_year = st.selectbox("เลือกปี (Year)", maint_years, key="m_year")
 
-    maint_month_clause = ""
+    m_year_clause = (
+        "" if sel_maint_year == "ทั้งหมด" else f"AND d.year = {sel_maint_year}"
+    )
+
+    # ดึงเฉพาะเดือนที่มีข้อมูลอยู่จริงตามปีที่เลือก
     with col_f2:
-        df_maint_months = run_query(
-            "SELECT DISTINCT month_name, month FROM dim_date ORDER BY month"
-        )
+        df_maint_months = run_query(f"""
+            SELECT DISTINCT d.month_name, d.month 
+            FROM fact_maintenance f 
+            JOIN dim_date d ON f.date_key = d.date_key 
+            WHERE 1=1 {m_year_clause}
+            ORDER BY d.month
+        """)
         months_list = (
             df_maint_months["month_name"].tolist()
             if not df_maint_months.empty
@@ -452,25 +523,21 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
             "เลือกเดือน (Month)", months_list, key="m_month"
         )
 
-    # Local Clause Setup
-    m_year_clause = (
-        "" if sel_maint_year == "ทั้งหมด" else f"AND d.year = {sel_maint_year}"
-    )
     m_month_clause = (
         ""
         if sel_maint_month == "ทั้งหมด"
         else f"AND d.month_name = '{sel_maint_month}'"
     )
 
-    # KPI Calculation (Req 4.2)
-    maint_cost_val = (
-        run_query(f"""
-        SELECT SUM(f.total_cost) 
+    # KPI Calculation พร้อมการป้องกัน NaN
+    maint_cost_res = run_query(f"""
+        SELECT COALESCE(SUM(f.total_cost), 0)
         FROM fact_maintenance f 
         JOIN dim_date d ON f.date_key = d.date_key 
         WHERE 1=1 {m_year_clause} {m_month_clause}
-    """).iloc[0, 0]
-        or 0
+    """)
+    maint_cost_val = (
+        maint_cost_res.iloc[0, 0] if not maint_cost_res.empty else 0
     )
 
     m1, m2, m3 = st.columns(3)
@@ -496,7 +563,7 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Top 10 Trucks with Vertical Bar Chart (Req 4.1)
+    # Top 10 Maintenance Cost
     st.markdown(
         '<div class="section-header">10 อันดับ รถบรรทุกที่มีค่าซ่อมบำรุงสูงสุด (Top 10 Maintenance Cost)</div>',
         unsafe_allow_html=True,
@@ -515,10 +582,10 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
     if not df_truck_maint.empty:
         fig_truck_m = px.bar(
             df_truck_maint,
-            x="Truck_ID",  # Vertical Bar Chart Requirement
+            x="Truck_ID",
             y="total_maint_cost",
             text_auto=".3s",
-            color_discrete_sequence=["#EE0000"],
+            color_discrete_sequence=["#DB1A1A"],
             labels={
                 "total_maint_cost": "ค่าซ่อมบำรุง (฿)",
                 "Truck_ID": "รหัสรถบรรทุก",
@@ -531,7 +598,7 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
     else:
         st.info("ไม่พบข้อมูลค่าซ่อมบำรุงตามตัวกรองที่เลือก")
 
-    # Fleet & Driver Analysis Section (Req 4.4)
+    # Fleet & Driver Analysis Section
     st.markdown("<br>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
@@ -552,7 +619,7 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
             x="Truck_ID",
             y="total_trips",
             text_auto=True,
-            color_discrete_sequence=["#43CD80"],
+            color_discrete_sequence=["#8CC7C4"],
             labels={"Truck_ID": "รหัสรถบรรทุก", "total_trips": "จำนวน Trips"},
         )
         fig_truck_t.update_layout(
@@ -601,7 +668,6 @@ elif menu == "⏱️ ประสิทธิภาพการจัดส่�
     st.caption("วิเคราะห์คลังสินค้า ความล่าช้า และผลต่างระหว่างเวลาจริงเทียบกับแผน")
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Full Pie Chart for Delivery On-time vs Delayed (Req 5)
     st.markdown(
         '<div class="section-header">อัตราการล่าช้าเทียบกับส่งตรงเวลา (On-Time vs Delayed Ratio)</div>',
         unsafe_allow_html=True,
@@ -622,11 +688,11 @@ elif menu == "⏱️ ประสิทธิภาพการจัดส่�
             df_delivery_pie,
             names="status",
             values="count",
-            hole=0,  # Full Pie Chart Requirement
+            hole=0,
             color="status",
             color_discrete_map={
-                "ตรงเวลา (On Time)": "#43CD80",
-                "ล่าช้า (Delayed)": "#EE0000",
+                "ตรงเวลา (On Time)": "#8CC7C4",
+                "ล่าช้า (Delayed)": "#DB1A1A",
             },
         )
         fig_del_pie.update_traces(
@@ -658,7 +724,7 @@ elif menu == "⏱️ ประสิทธิภาพการจัดส่�
             y="facility_name",
             orientation="h",
             text_auto=True,
-            color_discrete_sequence=["#EE0000"],
+            color_discrete_sequence=["#DB1A1A"],
             labels={
                 "late_count": "จำนวนเคสที่ล่าช้า",
                 "facility_name": "ชื่อคลังสินค้า",
@@ -686,7 +752,7 @@ elif menu == "⏱️ ประสิทธิภาพการจัดส่�
                 df_delay,
                 x="delay_minutes",
                 nbins=25,
-                color_discrete_sequence=["#EE0000"],
+                color_discrete_sequence=["#DB1A1A"],
                 labels={"delay_minutes": "ความล่าช้า (นาที)"},
             )
             fig_delay.update_layout(
@@ -705,7 +771,6 @@ elif menu == "⛽ ตัวชี้วัดการใช้น้ำมั�
     st.caption("ตรวจสอบค่าใช้จ่ายน้ำมันเชื้อเพลิงและอุบัติเหตุที่เกิดขึ้น")
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Dynamic Top Truck by Fuel Cost (Req 6.1)
     df_top_fuel_truck = run_query(f"""
         SELECT t.Truck_ID, SUM(f.total_cost) as total_fuel_cost
         FROM fact_fuel f
@@ -726,12 +791,10 @@ elif menu == "⛽ ตัวชี้วัดการใช้น้ำมั�
         else 0
     )
 
-    tot_fuel_val = (
-        run_query(
-            f"SELECT SUM(f.total_cost) FROM fact_fuel f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {year_clause}"
-        ).iloc[0, 0]
-        or 0
+    tot_fuel_res = run_query(
+        f"SELECT COALESCE(SUM(f.total_cost), 0) FROM fact_fuel f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {year_clause}"
     )
+    tot_fuel_val = tot_fuel_res.iloc[0, 0] if not tot_fuel_res.empty else 0
 
     col_fkpi1, col_fkpi2 = st.columns(2)
     with col_fkpi1:
@@ -751,7 +814,6 @@ elif menu == "⛽ ตัวชี้วัดการใช้น้ำมั�
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Fuel Cost Ranking by Truck (Req 6.2)
     st.markdown(
         '<div class="section-header">อันดับค่าใช้จ่ายน้ำมันแบ่งตามรถบรรทุก (Fuel Cost Ranking by Truck)</div>',
         unsafe_allow_html=True,
@@ -771,7 +833,7 @@ elif menu == "⛽ ตัวชี้วัดการใช้น้ำมั�
             x="Truck_ID",
             y="total_fuel_cost",
             text_auto=".3s",
-            color_discrete_sequence=["#EE0000"],
+            color_discrete_sequence=["#DB1A1A"],
             labels={
                 "total_fuel_cost": "ค่าน้ำมัน (฿)",
                 "Truck_ID": "รหัสรถบรรทุก",
@@ -784,7 +846,6 @@ elif menu == "⛽ ตัวชี้วัดการใช้น้ำมั�
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Safety Analysis Section (Req 6.3)
     col1, col2 = st.columns(2)
     with col1:
         st.markdown(
@@ -801,7 +862,7 @@ elif menu == "⛽ ตัวชี้วัดการใช้น้ำมั�
             x="year",
             y="fuel_cost",
             text_auto=".3s",
-            color_discrete_sequence=["#EE0000"],
+            color_discrete_sequence=["#DB1A1A"],
             labels={"year": "ปี", "fuel_cost": "ค่าน้ำมัน (฿)"},
         )
         fig_fy.update_layout(
