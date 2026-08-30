@@ -47,14 +47,18 @@ models:
   - name: dim_customers
     description: "ตารางมิติข้อมูลลูกค้า"
     columns:
-      - name: customer_id
+      - name: Customer_Key
         tests:
           - unique
           - not_null
-      - name: customer_name
+      - name: Customer_ID
+        tests:
+          - unique
+          - not_null
+      - name: Customer_Name
         tests:
           - not_null
-      - name: account_status
+      - name: Status
         tests:
           - not_null
 
