@@ -4,7 +4,7 @@ with stg_facilities as (
 
 select
     -- Primary Key สำหรับ Join กับ Fact Table
-    md5(cast(facility_id as string)) as facility_sk,
+    md5(cast(facility_id as string)) as facility_key,
     
     -- Business Key
     facility_id,

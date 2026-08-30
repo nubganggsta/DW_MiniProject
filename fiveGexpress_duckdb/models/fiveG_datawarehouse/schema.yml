@@ -15,7 +15,7 @@ models:
   - name: dim_drivers
     description: "ตารางมิติประวัติพนักงานขับรถ"
     columns:
-      - name: driver_sk
+      - name: driver_key
         tests:
           - unique
           - not_null
@@ -27,7 +27,7 @@ models:
   - name: dim_facilities
     description: "ตารางมิติสถานที่และคลังสินค้า"
     columns:
-      - name: facility_sk
+      - name: facility_key
         tests:
           - unique
           - not_null
@@ -47,15 +47,15 @@ models:
   - name: dim_customers
     description: "ตารางมิติข้อมูลลูกค้า"
     columns:
-      - name: Customer_Key
+      - name: customer_key
         tests:
           - unique
           - not_null
-      - name: Customer_ID
+      - name: customer_id
         tests:
           - unique
           - not_null
-      - name: Customer_Name
+      - name: customer_name
         tests:
           - not_null
       - name: Status
@@ -65,7 +65,7 @@ models:
   - name: dim_trucks
     description: "ตารางมิติข้อมูลรถบรรทุก"
     columns:
-      - name: truck_sk
+      - name: truck_key
         tests:
           - unique
           - not_null
@@ -101,7 +101,7 @@ models:
           - relationships:
               arguments:
                 to: ref('dim_drivers')
-                field: driver_sk
+                field: driver_key
 
   - name: fct_maintenance
     description: "Fact Table บันทึกการซ่อมบำรุง"
@@ -135,4 +135,4 @@ models:
           - relationships:
               arguments:
                 to: ref('dim_drivers')
-                field: driver_sk
+                field: driver_key
