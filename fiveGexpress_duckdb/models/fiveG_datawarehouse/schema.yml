@@ -2,7 +2,7 @@ version: 2
 
 models:
   # ==================================================================
-  # DIMENSION TABLES (มีไฟล์จริง 4 ตาราง)
+  # DIMENSION TABLES
   # ==================================================================
   - name: dim_date
     description: "ตารางมิติมิติเวลา (Master Date Dimension)"
@@ -82,9 +82,9 @@ models:
           - not_null
 
   # ==================================================================
-  # FACT TABLES (มีไฟล์จริง 3 ตาราง)
+  # FACT TABLES
   # ==================================================================
-  - name: fct_fuel
+  - name: fact_fuel
     description: "Fact Table บันทึกการเติมน้ำมัน"
     columns:
       - name: fuel_key
@@ -97,17 +97,20 @@ models:
       - name: date_key
         tests:
           - relationships:
-              arguments:
-                to: ref('dim_date')
-                field: date_key
+              to: ref('dim_date')
+              field: date_key
       - name: driver_key
         tests:
           - relationships:
-              arguments:
-                to: ref('dim_drivers')
-                field: driver_key
+              to: ref('dim_drivers')
+              field: driver_key
+      - name: truck_key
+        tests:
+          - relationships:
+              to: ref('dim_trucks')
+              field: truck_key
 
-  - name: fct_maintenance
+  - name: fact_maintenance
     description: "Fact Table บันทึกการซ่อมบำรุง"
     columns:
       - name: maintenance_id
@@ -117,9 +120,19 @@ models:
       - name: total_cost
         tests:
           - not_null
+      - name: date_key
+        tests:
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+      - name: truck_key
+        tests:
+          - relationships:
+              to: ref('dim_trucks')
+              field: truck_key
 
-  - name: fct_safety_incidents
-    description: "Fact Table บันทึกอุบัติเหตุ"
+  - name: fact_safety_incidents
+    description: "Fact Table บันทึกอุบัติเหตุและความปลอดภัย"
     columns:
       - name: safety_incident_key
         tests:
@@ -131,12 +144,99 @@ models:
       - name: date_key
         tests:
           - relationships:
-              arguments:
-                to: ref('dim_date')
-                field: date_key
+              to: ref('dim_date')
+              field: date_key
       - name: driver_key
         tests:
           - relationships:
-              arguments:
-                to: ref('dim_drivers')
-                field: driver_key
+              to: ref('dim_drivers')
+              field: driver_key
+      - name: truck_key
+        tests:
+          - relationships:
+              to: ref('dim_trucks')
+              field: truck_key
+
+  - name: fact_delivery
+    description: "Fact Table บันทึกเหตุการณ์การจัดส่งสินค้า (Delivery Events)"
+    columns:
+      - name: delivery_event_key
+        tests:
+          - unique
+          - not_null
+      - name: date_key
+        tests:
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+      - name: customer_key
+        tests:
+          - relationships:
+              to: ref('dim_customers')
+              field: customer_key
+      - name: driver_key
+        tests:
+          - relationships:
+              to: ref('dim_drivers')
+              field: driver_key
+      - name: truck_key
+        tests:
+          - relationships:
+              to: ref('dim_trucks')
+              field: truck_key
+      - name: facility_key
+        tests:
+          - relationships:
+              to: ref('dim_facilities')
+              field: facility_key
+
+  - name: fact_loads
+    description: "Fact Table บันทึกข้อมูลเที่ยวโหลดสินค้าและรายได้"
+    columns:
+      - name: load_key
+        tests:
+          - unique
+          - not_null
+      - name: date_key
+        tests:
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+      - name: customer_key
+        tests:
+          - relationships:
+              to: ref('dim_customers')
+              field: customer_key
+      - name: route_key
+        tests:
+          - relationships:
+              to: ref('dim_route')
+              field: route_key
+
+  - name: fact_trips
+    description: "Fact Table บันทึกข้อมูลการวิ่งเที่ยวรถและระยะทาง"
+    columns:
+      - name: trip_key
+        tests:
+          - unique
+          - not_null
+      - name: date_key
+        tests:
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+      - name: driver_key
+        tests:
+          - relationships:
+              to: ref('dim_drivers')
+              field: driver_key
+      - name: truck_key
+        tests:
+          - relationships:
+              to: ref('dim_trucks')
+              field: truck_key
+      - name: customer_key
+        tests:
+          - relationships:
+              to: ref('dim_customers')
+              field: customer_key
