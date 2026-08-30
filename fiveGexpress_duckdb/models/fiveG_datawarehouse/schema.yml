@@ -39,6 +39,10 @@ models:
   - name: dim_route
     description: "ตารางมิติเส้นทาง"
     columns:
+      - name: route_sk
+        tests:
+          - unique
+          - not_null
       - name: route_id
         tests:
           - unique
