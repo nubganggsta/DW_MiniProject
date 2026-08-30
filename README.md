@@ -258,6 +258,8 @@ Step 4: การวัดผลทางธุรกิจ (Business Intelligen
 
 ## ETL Process
 
+## Data Cube Diagram
+
 ## Data Warehouse Database
 
 ## Interactive Dashboard
