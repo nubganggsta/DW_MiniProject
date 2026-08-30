@@ -237,15 +237,15 @@ elif menu == "🚛 กองรถและการซ่อมบำรุง 
     with col3:
         st.markdown('<div class="section-header">พนักงานขับรถที่มีสถิติการวิ่งสูงสุด 10 อันดับแรก</div>', unsafe_allow_html=True)
         df_driver = conn.query(f"""
-            SELECT dr.driver_name, COUNT(f.trip_key) as total_trips
+            SELECT dr.full_name, COUNT(f.trip_key) as total_trips
             FROM fact_trips f 
             JOIN dim_drivers dr ON f.driver_key = dr.driver_key
             JOIN dim_date d ON f.date_key = d.date_key
             WHERE 1=1 {year_clause}
-            GROUP BY dr.driver_name ORDER BY total_trips DESC LIMIT 10
+            GROUP BY dr.full_name ORDER BY total_trips DESC LIMIT 10
         """).df()
-        fig_drv = px.bar(df_driver, x="total_trips", y="driver_name", orientation='h', text_auto=True, color_discrete_sequence=["#1a1d20"],
-                         labels={"total_trips": "จำนวน Trips", "driver_name": "ชื่อพนักงานขับรถ"})
+        fig_drv = px.bar(df_driver, x="total_trips", y="full_name", orientation='h', text_auto=True, color_discrete_sequence=["#1a1d20"],
+                         labels={"total_trips": "จำนวน Trips", "full_name": "ชื่อพนักงานขับรถ"})
         fig_drv.update_layout(yaxis={'categoryorder':'total ascending'})
         st.plotly_chart(fig_drv, use_container_width=True)
 
