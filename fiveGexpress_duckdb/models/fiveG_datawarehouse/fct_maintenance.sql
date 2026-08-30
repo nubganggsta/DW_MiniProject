@@ -1,14 +1,7 @@
-with maintenance as (
-
-    select *
-    from {{ ref('stg_maintenance_records') }}
-
-)
-
-select
+SELECT
     maintenance_id,
-    truck_id,
-    maintenance_date,
+    MD5(CAST(truck_id AS VARCHAR)) AS truck_key,
+    CAST(STRFTIME(maintenance_date, '%Y%m%d') AS INT) AS date_key,
     maintenance_type,
     odometer_reading,
     labor_hours,
@@ -17,7 +10,5 @@ select
     total_cost,
     facility_location,
     downtime_hours,
-    service_description,
-    ingestion_timestamp
-
-from maintenance
+    service_description
+FROM {{ ref('stg_maintenance_records') }}
