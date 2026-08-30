@@ -11,7 +11,7 @@ with stg_trucks as (
 
 select
     -- 1. Surrogate Key
-    md5(cast(truck_id as {{ dbt.type_string() }})) as truck_sk,
+    md5(cast(truck_id as {{ dbt.type_string() }})) as truck_key,
 
     -- 2. Business Key
     truck_id,

@@ -8,7 +8,7 @@ with stg_drivers as (
 
 dim_calculated as (
     select
-        md5(cast(driver_id as {{ dbt.type_string() }})) as driver_sk,
+        md5(cast(driver_id as {{ dbt.type_string() }})) as driver_key,
         driver_id,
         concat(coalesce(first_name, ''), ' ', coalesce(last_name, '')) as full_name,
         first_name,
