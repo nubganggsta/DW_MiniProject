@@ -256,7 +256,7 @@ Step 4: การวัดผลทางธุรกิจ (Business Intelligen
 
 
 
-## ETL หรือ ELT Process
+## ETL Process
 
 ## Data Warehouse Database
 
