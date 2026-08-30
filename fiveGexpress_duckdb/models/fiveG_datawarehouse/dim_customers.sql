@@ -1,3 +1,7 @@
+{{ config(
+    materialized='table'
+) }}
+
 with customers as (
 
     select *
@@ -6,14 +10,15 @@ with customers as (
 )
 
 select
-    customer_id,
-    customer_name,
-    customer_type,
-    credit_terms_days,
-    primary_freight_type,
-    account_status,
-    contract_start_date,
-    annual_revenue_potential,
-    stg_loaded_at as dim_created_at
+    -- Primary Key (Surrogate Key)
+    md5(cast(customer_id as {{ dbt.type_string() }})) as customer_key,
+
+    -- Business Key & Attributes
+    customer_id as customer_id,
+    customer_name as customer_name,
+    customer_type as customer_type,
+    credit_terms_days as payment_terms,
+    primary_freight_type as primary_freight,
+    account_status as Status
 
 from customers

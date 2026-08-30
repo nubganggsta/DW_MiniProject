@@ -39,6 +39,10 @@ models:
   - name: dim_route
     description: "ตารางมิติเส้นทาง"
     columns:
+      - name: route_sk
+        tests:
+          - unique
+          - not_null
       - name: route_id
         tests:
           - unique
@@ -47,29 +51,33 @@ models:
   - name: dim_customers
     description: "ตารางมิติข้อมูลลูกค้า"
     columns:
-      - name: customer_id
+      - name: Customer_Key
         tests:
           - unique
           - not_null
-      - name: customer_name
+      - name: Customer_ID
+        tests:
+          - unique
+          - not_null
+      - name: Customer_Name
         tests:
           - not_null
-      - name: account_status
+      - name: Status
         tests:
           - not_null
 
   - name: dim_trucks
     description: "ตารางมิติข้อมูลรถบรรทุก"
     columns:
-      - name: truck_sk
+      - name: Truck_Key
         tests:
           - unique
           - not_null
-      - name: truck_id
+      - name: Truck_ID
         tests:
           - unique
           - not_null
-      - name: status
+      - name: Status
         tests:
           - not_null
 

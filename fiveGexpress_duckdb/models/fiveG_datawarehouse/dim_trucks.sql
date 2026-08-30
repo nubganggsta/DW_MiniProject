@@ -10,25 +10,17 @@ with stg_trucks as (
 )
 
 select
-    -- 1. Surrogate Key
-    md5(cast(truck_id as {{ dbt.type_string() }})) as truck_sk,
+    -- Primary Key (Surrogate Key)
+    md5(cast(truck_id as {{ dbt.type_string() }})) as Truck_Key,
 
-    -- 2. Business Key
-    truck_id,
-
-    -- 3. Attributes
-    unit_number,
-    make,
-    model_year,
-    vin,
-    acquisition_date,
-    acquisition_mileage,
-    fuel_type,
-    tank_capacity,
-    status,
-    home_terminal,
-
-    -- 4. Audit Column
-    ingestion_timestamp as dim_created_at
+    -- Business Key & Attributes
+    truck_id as Truck_ID,
+    unit_number as Unit_Number,
+    make as Make,
+    cast(model_year as int) as Model_Year,
+    vin as VIN,
+    fuel_type as Fuel_Type,
+    status as Status,
+    home_terminal as Home_Terminal
 
 from stg_trucks
