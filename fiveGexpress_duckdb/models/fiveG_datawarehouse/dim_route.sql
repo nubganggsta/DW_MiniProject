@@ -6,7 +6,7 @@ with routes as (
 )
 
 select
-    md5(cast(route_id as {{ dbt.type_string() }})) as route_sk,
+    md5(cast(route_id as {{ dbt.type_string() }})) as route_key,
     route_id,
     origin_city,
     origin_state,
