@@ -262,5 +262,6 @@ Step 4: การวัดผลทางธุรกิจ (Business Intelligen
 
 ## Data Warehouse Database
 - dim_customers: โหลดข้อมูลลูกค้าจาก stg_customers สร้าง Surrogate Key ชื่อ customer_key โดยใช้ค่า md5 hash จาก customer_id, เลือกคอลัมน์ที่ต้องการ และเปลี่ยนชื่อ credit_terms_days เป็น payment_terms, primary_freight_type เป็น primary_freight และ account_status เป็น status แล้วสร้างผลลัพธ์ในรูปแบบตาราง (materialized as a table)
+- dim_date: สร้าง date dimension ตั้งแต่ 1950-01-01 ถึง 2030-12-31 โดยใช้ generate_series สร้าง date_key ในรูปแบบ YYYYMMDD และคำนวณข้อมูลที่เกี่ยวข้องกับวันที่ เช่น วันที่เต็ม ปี ไตรมาส เดือน สัปดาห์ และวันในสัปดาห์ รวมถึงชื่อเดือน ชื่อวัน และชื่อไตรมาส พร้อมระบุว่าแต่ละวันเป็น วันหยุดสุดสัปดาห์ (weekend), วันทำงาน (weekday), วันเริ่มต้นเดือน (month start) หรือ วันสิ้นเดือน (month end) จากนั้นสร้างเป็นตาราง dim_date โดยมีข้อมูลครบทุกวันในช่วงเวลาที่กำหนด  
 
 ## Interactive Dashboard
