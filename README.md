@@ -261,5 +261,6 @@ Step 4: การวัดผลทางธุรกิจ (Business Intelligen
 ## Data Cube Diagram
 
 ## Data Warehouse Database
+- dim_customers: โหลดข้อมูลลูกค้าจาก stg_customers สร้าง Surrogate Key ชื่อ customer_key โดยใช้ค่า md5 hash จาก customer_id, เลือกคอลัมน์ที่ต้องการ และเปลี่ยนชื่อ credit_terms_days เป็น payment_terms, primary_freight_type เป็น primary_freight และ account_status เป็น status แล้วสร้างผลลัพธ์ในรูปแบบตาราง (materialized as a table)
 
 ## Interactive Dashboard
