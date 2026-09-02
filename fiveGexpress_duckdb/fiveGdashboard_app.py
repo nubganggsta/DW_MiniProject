@@ -331,9 +331,143 @@ if menu == "📈 ภาพรวมการดำเนินงาน (Executi
 # =========================================================
 elif menu == "💰 การวิเคราะห์รายได้และพฤติกรรมลูกค้า":
     st.title("💰 การวิเคราะห์รายได้และพฤติกรรมลูกค้า")
-    st.caption("เจาะลึกที่มารายได้เปรียบเทียบรายปี ลูกค้าหลัก และเส้นทางยอดนิยม")
+    st.caption("เจาะลึกที่มารายได้เปรียบเทียบรายปี ลูกค้าหลัก เส้นทางยอดนิยม และเดือนที่ทำรายได้สูงสุด")
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # ---------------------------------------------------------
+    # ตัวกรองเฉพาะหน้า: เลือกปีสำหรับวิเคราะห์เดือนที่รายได้สูงสุด
+    # ---------------------------------------------------------
+    st.markdown(
+        '<div class="section-header">ตัวกรองเลือกปีเพื่อวิเคราะห์เดือนที่รายได้สูงสุด</div>',
+        unsafe_allow_html=True,
+    )
+    df_rev_years = run_query(
+        "SELECT DISTINCT d.year FROM fact_loads f JOIN dim_date d ON f.date_key = d.date_key WHERE d.year IS NOT NULL ORDER BY d.year DESC"
+    )
+    rev_years_list = df_rev_years["year"].tolist() if not df_rev_years.empty else [2026]
+    
+    selected_rev_year = st.selectbox(
+        "เลือกปี (Year)", rev_years_list, key="rev_page_year_select"
+    )
+
+    # 1. ดึงข้อมูลรายได้ทุกเดือนของปีที่เลือก
+    df_monthly_rev = run_query(f"""
+        SELECT 
+            d.month,
+            d.month_name,
+            SUM(f.revenue) as monthly_revenue
+        FROM fact_loads f
+        JOIN dim_date d ON f.date_key = d.date_key
+        WHERE d.year = {selected_rev_year}
+        GROUP BY d.month, d.month_name
+        ORDER BY d.month
+    """)
+
+    if not df_monthly_rev.empty:
+        # หาเดือนที่รายได้สูงสุด
+        top_month_row = df_monthly_rev.loc[df_monthly_rev["monthly_revenue"].idxmax()]
+        top_month_name = top_month_row["month_name"]
+        top_month_rev = top_month_row["monthly_revenue"]
+        
+        # รายได้รวมทั้งปี
+        total_year_rev = df_monthly_rev["monthly_revenue"].sum()
+        top_month_pct = (top_month_rev / total_year_rev * 100) if total_year_rev > 0 else 0
+        rest_year_rev = total_year_rev - top_month_rev
+
+        # สร้าง DataFrame สำหรับกราฟเปรียบเทียบ (เดือนสูงสุด VS รายได้รวมทั้งปี)
+        df_compare = pd.DataFrame([
+            {
+                "category": f"เดือนสูงสุด ({top_month_name})",
+                "revenue": top_month_rev,
+                "percentage": f"{top_month_pct:.1f}% ของทั้งปี"
+            },
+            {
+                "category": f"รายได้รวมทั้งปี {selected_rev_year}",
+                "revenue": total_year_rev,
+                "percentage": "100.0%"
+            }
+        ])
+
+        col_m1, col_m2, col_m3 = st.columns(3)
+        with col_m1:
+            render_kpi_card(
+                f"เดือนที่รายได้สูงสุด ({selected_rev_year})",
+                f"{top_month_name}",
+                f"Peak Revenue Month",
+            )
+        with col_m2:
+            render_kpi_card(
+                f"รายได้เดือน {top_month_name}",
+                f"฿{top_month_rev:,.2f}",
+                f"คิดเป็น {top_month_pct:.1f}% ของรายได้ทั้งปี",
+            )
+        with col_m3:
+            render_kpi_card(
+                f"รายได้รวมทั้งปี {selected_rev_year}",
+                f"฿{total_year_rev:,.2f}",
+                f"Total Revenue ({selected_rev_year})",
+            )
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        col_chart_top, col_chart_monthly = st.columns([1, 1.5])
+
+        with col_chart_top:
+            st.markdown(
+                f'<div class="section-header">เปรียบเทียบรายได้เดือนสูงสุดเทียบกับทั้งปี ({selected_rev_year})</div>',
+                unsafe_allow_html=True,
+            )
+            fig_compare = px.bar(
+                df_compare,
+                x="category",
+                y="revenue",
+                text="revenue",
+                color="category",
+                color_discrete_map={
+                    f"เดือนสูงสุด ({top_month_name})": "#DB1A1A",
+                    f"รายได้รวมทั้งปี {selected_rev_year}": "#8CC7C4",
+                },
+                labels={"category": "เปรียบเทียบ", "revenue": "รายได้ (฿)"},
+            )
+            fig_compare.update_traces(
+                texttemplate="฿%{y:,.0f}", textposition="outside"
+            )
+            fig_compare.update_layout(
+                showlegend=False,
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+            )
+            st.plotly_chart(fig_compare, use_container_width=True)
+
+        with col_chart_monthly:
+            st.markdown(
+                f'<div class="section-header">รายได้แยกรายเดือนประจำปี {selected_rev_year}</div>',
+                unsafe_allow_html=True,
+            )
+            fig_monthly = px.bar(
+                df_monthly_rev,
+                x="month_name",
+                y="monthly_revenue",
+                text_auto=".3s",
+                color="month_name",
+                color_discrete_sequence=px.colors.qualitative.Pastel,
+                labels={"month_name": "เดือน", "monthly_revenue": "รายได้ (฿)"},
+            )
+            fig_monthly.update_layout(
+                showlegend=False,
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+            )
+            st.plotly_chart(fig_monthly, use_container_width=True)
+
+    else:
+        st.info(f"ไม่พบข้อมูลรายได้ในปี {selected_rev_year}")
+
+    st.markdown("<br><hr><br>", unsafe_allow_html=True)
+
+    # ---------------------------------------------------------
+    # ส่วนเดิม: ลูกค้าหลัก เส้นทางยอดนิยม และกราฟสรุป
+    # ---------------------------------------------------------
     df_top_cust = run_query(f"""
         SELECT c.customer_name, SUM(f.revenue) as total_revenue
         FROM fact_loads f 
@@ -375,7 +509,7 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
         )
         rev_tot = rev_tot_res.iloc[0, 0] if not rev_tot_res.empty else 0
         render_kpi_card(
-            "รายได้รวมตามตัวกรอง", f"฿{rev_tot:,.2f}", "Total Revenue"
+            "รายได้รวมตามตัวกรองหลัก", f"฿{rev_tot:,.2f}", "Total Revenue"
         )
     with col_kpi2:
         render_kpi_card(
@@ -472,8 +606,7 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)"
     )
     st.plotly_chart(fig_route, use_container_width=True)
-
-
+    
 # =========================================================
 # PAGE 3 — FLEET MANAGEMENT & MAINTENANCE
 # =========================================================
@@ -498,7 +631,9 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
     maint_years.insert(0, "ทั้งหมด")
 
     with col_f1:
-        sel_maint_year = st.selectbox("เลือกปี (Year)", maint_years, key="m_year")
+        sel_maint_year = st.selectbox(
+            "เลือกปี (Year)", maint_years, key="m_year"
+        )
 
     m_year_clause = (
         "" if sel_maint_year == "ทั้งหมด" else f"AND d.year = {sel_maint_year}"
@@ -529,7 +664,7 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
         else f"AND d.month_name = '{sel_maint_month}'"
     )
 
-    # KPI Calculation พร้อมการป้องกัน NaN
+    # KPI Calculation
     maint_cost_res = run_query(f"""
         SELECT COALESCE(SUM(f.total_cost), 0)
         FROM fact_maintenance f 
@@ -560,6 +695,106 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
             str(sel_maint_month),
             "Maintenance Filter",
         )
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # ---------------------------------------------------------
+    # 1. กราฟแท่งแสดงค่าซ่อมบำรุงรวมที่เปลี่ยนตามตัวเลือก (Filtered Maintenance Cost)
+    # ---------------------------------------------------------
+    col_m_bar, col_m_line = st.columns(2)
+
+    with col_m_bar:
+        st.markdown(
+            '<div class="section-header">ค่าใช้จ่ายการซ่อมบำรุงรวม (ตามตัวกรองที่เลือก)</div>',
+            unsafe_allow_html=True,
+        )
+
+        # dynamic group-by ขึ้นอยู่กับเงื่อนไข filter
+        if sel_maint_month != "ทั้งหมด":
+            # เลือกเดือนเฉพาะ -> แสดงรายวันในเดือนนั้น
+            sql_maint_dyn = f"""
+                SELECT d.full_date::VARCHAR as period, SUM(f.total_cost) as total_maint_cost
+                FROM fact_maintenance f
+                JOIN dim_date d ON f.date_key = d.date_key
+                WHERE 1=1 {m_year_clause} {m_month_clause}
+                GROUP BY d.full_date ORDER BY d.full_date
+            """
+            x_label = "วันที่"
+        elif sel_maint_year != "ทั้งหมด":
+            # เลือกปีเฉพาะ -> แสดงรายเดือนในปีนั้น
+            sql_maint_dyn = f"""
+                SELECT d.month_name as period, d.month, SUM(f.total_cost) as total_maint_cost
+                FROM fact_maintenance f
+                JOIN dim_date d ON f.date_key = d.date_key
+                WHERE 1=1 {m_year_clause}
+                GROUP BY d.month_name, d.month ORDER BY d.month
+            """
+            x_label = "เดือน"
+        else:
+            # เลือกทั้งหมด -> แสดงรายปี
+            sql_maint_dyn = """
+                SELECT d.year::VARCHAR as period, SUM(f.total_cost) as total_maint_cost
+                FROM fact_maintenance f
+                JOIN dim_date d ON f.date_key = d.date_key
+                GROUP BY d.year ORDER BY d.year
+            """
+            x_label = "ปี"
+
+        df_maint_dyn = run_query(sql_maint_dyn)
+
+        if not df_maint_dyn.empty:
+            fig_maint_dyn = px.bar(
+                df_maint_dyn,
+                x="period",
+                y="total_maint_cost",
+                text_auto=".3s",
+                color_discrete_sequence=["#8CC7C4"],
+                labels={
+                    "period": x_label,
+                    "total_maint_cost": "ค่าซ่อมบำรุง (฿)",
+                },
+            )
+            fig_maint_dyn.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)"
+            )
+            st.plotly_chart(fig_maint_dyn, use_container_width=True)
+        else:
+            st.info("ไม่พบข้อมูลค่าซ่อมบำรุงตามตัวกรองที่เลือก")
+
+    # ---------------------------------------------------------
+    # 2. กราฟเส้นเปรียบเทียบค่าใช้จ่ายการซ่อมบำรุงรวมของแต่ละปี (Yearly Maintenance Trend)
+    # ---------------------------------------------------------
+    with col_m_line:
+        st.markdown(
+            '<div class="section-header">แนวโน้มเปรียบเทียบค่าซ่อมบำรุงรวมรายปี (Yearly Trend)</div>',
+            unsafe_allow_html=True,
+        )
+        df_maint_yearly = run_query("""
+            SELECT d.year::VARCHAR as year, SUM(f.total_cost) as yearly_maint_cost
+            FROM fact_maintenance f
+            JOIN dim_date d ON f.date_key = d.date_key
+            GROUP BY d.year ORDER BY d.year
+        """)
+
+        if not df_maint_yearly.empty:
+            fig_maint_line = px.line(
+                df_maint_yearly,
+                x="year",
+                y="yearly_maint_cost",
+                markers=True,
+                color_discrete_sequence=["#DB1A1A"],
+                labels={
+                    "year": "ปี",
+                    "yearly_maint_cost": "ค่าซ่อมบำรุงรวม (฿)",
+                },
+            )
+            fig_maint_line.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+            )
+            st.plotly_chart(fig_maint_line, use_container_width=True)
+        else:
+            st.info("ไม่พบข้อมูลค่าซ่อมบำรุงรายปี")
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -658,8 +893,6 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
             plot_bgcolor="rgba(0,0,0,0)",
         )
         st.plotly_chart(fig_drv, use_container_width=True)
-
-
 # =========================================================
 # PAGE 4 — DELIVERY PERFORMANCE
 # =========================================================
