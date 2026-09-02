@@ -4,6 +4,77 @@ import plotly.express as px
 import plotly.io as pio
 import streamlit as st
 
+import streamlit as st
+
+st.set_page_config(layout="wide")
+
+# =========================================================
+# CUSTOM SIDEBAR STYLING (RED THEME)
+# =========================================================
+st.markdown(
+    """
+    <style>
+    /* 1. เปลี่ยนสีพื้นหลัง Sidebar เป็นสีแดง (Gradient ลุคพรีเมียม) */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #B30000 0%, #800000 100%) !important;
+    }
+
+    /* 2. ปรับแต่งข้อความทั่วไปใน Sidebar ให้เป็นสีขาว */
+    [data-testid="stSidebar"] *, 
+    [data-testid="stSidebar"] p, 
+    [data-testid="stSidebar"] span, 
+    [data-testid="stSidebar"] label {
+        color: #FFFFFF !important;
+        font-weight: 500;
+    }
+
+    /* 3. ปรับแต่งหัวข้อหลักและ Header ใน Sidebar */
+    [data-testid="stSidebar"] h1, 
+    [data-testid="stSidebar"] h2, 
+    [data-testid="stSidebar"] h3 {
+        color: #FFFFFF !important;
+        font-weight: 700 !important;
+        text-shadow: 0px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* 4. ปรับแต่ง Radio Button (ตัวเลือกหมวดหมู่) ให้สวยงาม */
+    [data-testid="stSidebar"] div[role="radiogroup"] > label {
+        background-color: rgba(255, 255, 255, 0.1);
+        padding: 10px 14px;
+        border-radius: 8px;
+        margin-bottom: 6px;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    /* เมื่อเอาเมาส์ไปชี้ที่ตัวเลือก */
+    [data-testid="stSidebar"] div[role="radiogroup"] > label:hover {
+        background-color: rgba(255, 255, 255, 0.25);
+        cursor: pointer;
+    }
+
+    /* 5. ปรับแต่ง Dropdown (Selectbox ตัวกรองปี) */
+    [data-testid="stSidebar"] div[data-baseweb="select"] > div {
+        background-color: #FFFFFF !important;
+        border-radius: 8px;
+        border: none !important;
+    }
+    
+    /* ตัวอักษรภายใน Dropdown ให้เป็นสีเข้มเพื่อให้เห็นชัดเจน */
+    [data-testid="stSidebar"] div[data-baseweb="select"] * {
+        color: #1A1D20 !important;
+        font-weight: 600;
+    }
+
+    /* 6. เส้นแบ่ง Divider ให้เป็นสีขาวโปร่งแสง */
+    [data-testid="stSidebar"] hr {
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # =========================================================
 # 1. Page Config & Custom Styling (Global Design System)
 # =========================================================
@@ -116,9 +187,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Banner Header
-header_logo_url = "https://via.placeholder.com/1200x180/1a1d20/ffffff?text=5G+EXPRESS+LOGISTICS+ANALYTICS"
-st.image(header_logo_url, use_container_width=True)
+
 
 
 # Reusable Helper Component for KPI Cards
@@ -604,7 +673,7 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ---------------------------------------------------------
-    # [ข้อ 1] เพิ่มกราฟแท่งค่าซ่อมบำรุงรายเดือน (ตามปีที่เลือก) และกราฟเส้นเปรียบเทียบรายปี
+    # กราฟค่าซ่อมบำรุงรายเดือนและรายปี
     # ---------------------------------------------------------
     col_maint_g1, col_maint_g2 = st.columns(2)
 
@@ -664,7 +733,72 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
 
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # ---------------------------------------------------------
+    # [เพิ่มเติม] KPI SUMMARY BOXES ก่อนเข้าสู่ส่วน TOP 10
+    # ---------------------------------------------------------
+    # 1. หาอันดับ 1 รถบรรทุกซ่อมบำรุงสูงสุด
+    df_top1_maint = run_query(f"""
+        SELECT t.Truck_ID, SUM(f.total_cost) as total_cost
+        FROM fact_maintenance f
+        JOIN dim_trucks t ON f.truck_key = t.truck_key
+        JOIN dim_date d ON f.date_key = d.date_key
+        WHERE 1=1 {m_year_clause} {m_month_clause}
+        GROUP BY t.Truck_ID ORDER BY total_cost DESC LIMIT 1
+    """)
+    top1_maint_truck = df_top1_maint.iloc[0]["Truck_ID"] if not df_top1_maint.empty else "-"
+    top1_maint_val = df_top1_maint.iloc[0]["total_cost"] if not df_top1_maint.empty else 0
+
+    # 2. หาอันดับ 1 รถบรรทุกวิ่งเที่ยวสูงสุด
+    df_top1_truck_trip = run_query(f"""
+        SELECT t.Truck_ID, COUNT(f.trip_key) as total_trips
+        FROM fact_trips f
+        JOIN dim_trucks t ON f.truck_key = t.truck_key
+        JOIN dim_date d ON f.date_key = d.date_key
+        WHERE 1=1 {year_clause}
+        GROUP BY t.Truck_ID ORDER BY total_trips DESC LIMIT 1
+    """)
+    top1_trip_truck = df_top1_truck_trip.iloc[0]["Truck_ID"] if not df_top1_truck_trip.empty else "-"
+    top1_trip_truck_val = df_top1_truck_trip.iloc[0]["total_trips"] if not df_top1_truck_trip.empty else 0
+
+    # 3. หาอันดับ 1 พนักงานขับรถวิ่งเที่ยวสูงสุด
+    df_top1_driver_trip = run_query(f"""
+        SELECT dr.full_name, COUNT(f.trip_key) as total_trips
+        FROM fact_trips f
+        JOIN dim_drivers dr ON f.driver_key = dr.driver_key
+        JOIN dim_date d ON f.date_key = d.date_key
+        WHERE 1=1 {year_clause}
+        GROUP BY dr.full_name ORDER BY total_trips DESC LIMIT 1
+    """)
+    top1_driver_name = df_top1_driver_trip.iloc[0]["full_name"] if not df_top1_driver_trip.empty else "-"
+    top1_driver_val = df_top1_driver_trip.iloc[0]["total_trips"] if not df_top1_driver_trip.empty else 0
+
+    # แสดง KPI Cards ทั้ง 3 อันดับสูงสุด
+    top_k1, top_k2, top_k3 = st.columns(3)
+    with top_k1:
+        render_kpi_card(
+            "รถที่มีค่าซ่อมบำรุงสูงสุด",
+            f"{top1_maint_truck}",
+            f"฿{top1_maint_val:,.2f}",
+            is_risk=True
+        )
+    with top_k2:
+        render_kpi_card(
+            "รถที่มีการใช้งานสูงสุด",
+            f"{top1_trip_truck}",
+            f"{top1_trip_truck_val:,} เที่ยว"
+        )
+    with top_k3:
+        render_kpi_card(
+            "พนักงานขับรถดีเด่น (เที่ยวสูงสุด)",
+            f"{top1_driver_name}",
+            f"{top1_driver_val:,} เที่ยว"
+        )
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # ---------------------------------------------------------
     # Top 10 Maintenance Cost
+    # ---------------------------------------------------------
     st.markdown(
         '<div class="section-header">10 อันดับ รถบรรทุกที่มีค่าซ่อมบำรุงสูงสุด (Top 10 Maintenance Cost)</div>',
         unsafe_allow_html=True,
@@ -759,7 +893,6 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
             plot_bgcolor="rgba(0,0,0,0)",
         )
         st.plotly_chart(fig_drv, use_container_width=True)
-
 
 # =========================================================
 # PAGE 4 — DELIVERY PERFORMANCE
