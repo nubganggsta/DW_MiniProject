@@ -256,8 +256,13 @@ Step 4: การวัดผลทางธุรกิจ (Business Intelligen
 
 
 
-## ETL หรือ ELT Process
+## ETL Process
+
+## Data Cube Diagram
 
 ## Data Warehouse Database
+- dim_customers: โหลดข้อมูลลูกค้าจาก stg_customers สร้าง Surrogate Key ชื่อ customer_key โดยใช้ค่า md5 hash จาก customer_id, เลือกคอลัมน์ที่ต้องการ และเปลี่ยนชื่อ credit_terms_days เป็น payment_terms, primary_freight_type เป็น primary_freight และ account_status เป็น status แล้วสร้างผลลัพธ์ในรูปแบบตาราง (materialized as a table)
+- dim_drivers: ดึงข้อมูลจาก stg_drivers และสร้าง driver_key แบบ MD5 จาก driver_id จากนั้นสร้าง full_name จากชื่อและนามสกุล พร้อมกำหนดสถานะการทำงาน is_active โดยตรวจสอบว่าไม่มี termination_date และมี employment_status เป็น active นอกจากนี้คำนวณ อายุงาน (tenure_years) จากวันที่เริ่มงานถึงวันที่สิ้นสุดงาน หรือวันที่ปัจจุบันหากยังทำงานอยู่ และคำนวณ อายุ (age) จากวันเกิดถึงวันที่ปัจจุบัน พร้อมเก็บข้อมูลเกี่ยวกับพนักงาน เช่น สถานะการจ้างงาน วันที่เริ่มงาน วันสิ้นสุดงาน ประสบการณ์ ใบขับขี่ ประเภท CDL และสาขาหรือสถานีประจำ (home_terminal)
+- dim_date: สร้าง date dimension ตั้งแต่ 1950-01-01 ถึง 2030-12-31 โดยใช้ generate_series สร้าง date_key ในรูปแบบ YYYYMMDD และคำนวณข้อมูลที่เกี่ยวข้องกับวันที่ เช่น วันที่เต็ม ปี ไตรมาส เดือน สัปดาห์ และวันในสัปดาห์ รวมถึงชื่อเดือน ชื่อวัน และชื่อไตรมาส พร้อมระบุว่าแต่ละวันเป็น วันหยุดสุดสัปดาห์ (weekend), วันทำงาน (weekday), วันเริ่มต้นเดือน (month start) หรือ วันสิ้นเดือน (month end) จากนั้นสร้างเป็นตาราง dim_date โดยมีข้อมูลครบทุกวันในช่วงเวลาที่กำหนด  
 
 ## Interactive Dashboard
