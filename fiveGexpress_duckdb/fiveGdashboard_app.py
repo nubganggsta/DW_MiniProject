@@ -425,13 +425,13 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
             df_rev_years["year"].astype(str).tolist() if not df_rev_years.empty else []
         )
         
-        # เพิ่มตัวเลือก "ทั้งหมด (All Years)" ไว้หน้าสุด
-        rev_years_list.insert(0, "ทั้งหมด (All Years)")
-        sel_rev_year = st.selectbox("เลือกปีที่ต้องการวิเคราะห์ (Year)", rev_years_list, key="p2_year_filter")
+        # เพิ่มตัวเลือก "ทั้งหมด" ไว้หน้าสุด
+        rev_years_list.insert(0, "ทั้งหมด")
+        sel_rev_year = st.selectbox("เลือกปี (year)", rev_years_list, key="p2_year_filter")
 
     with col_p2_2:
-        # ดึงรายชื่อเดือนตามปีที่เลือก (ถ้าเลือก "ทั้งหมด (All Years)" ให้ดึงเดือนที่มีข้อมูลทั้งหมด)
-        if sel_rev_year == "ทั้งหมด (All Years)" or not sel_rev_year:
+        # ดึงรายชื่อเดือนตามปีที่เลือก
+        if sel_rev_year == "ทั้งหมด" or not sel_rev_year:
             year_where_clause = ""
         else:
             year_where_clause = f"WHERE d.year = {sel_rev_year}"
@@ -447,11 +447,12 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
             df_rev_months["month_name"].tolist() if not df_rev_months.empty else []
         )
 
-        rev_months_list.insert(0, "ทั้งหมด (All Months)")
-        sel_rev_month = st.selectbox("เลือกเดือนที่ต้องการวิเคราะห์ (Month)", rev_months_list, key="p2_month_filter")
+        # เพิ่มตัวเลือก "ทั้งหมด" ไว้หน้าสุด
+        rev_months_list.insert(0, "ทั้งหมด")
+        sel_rev_month = st.selectbox("เลือกเดือน (month)", rev_months_list, key="p2_month_filter")
 
     # สร้างเงื่อนไข SQL ตามตัวกรองที่เลือก
-    if sel_rev_year == "ทั้งหมด (All Years)":
+    if sel_rev_year == "ทั้งหมด":
         p2_year_clause = ""
     elif sel_rev_year:
         p2_year_clause = f"AND d.year = {sel_rev_year}"
@@ -459,11 +460,9 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
         p2_year_clause = "AND 1=0"
 
     p2_month_clause = (
-        "" if sel_rev_month == "ทั้งหมด (All Months)" else f"AND d.month_name = '{sel_rev_month}'"
+        "" if sel_rev_month == "ทั้งหมด" else f"AND d.month_name = '{sel_rev_month}'"
     )
     p2_filter_clause = f"{p2_year_clause} {p2_month_clause}"
-
-    st.markdown("<br>", unsafe_allow_html=True)
 
     # ---------------------------------------------------------
     # 2. Key Performance Indicators (KPIs)
@@ -518,24 +517,22 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
 
     with col_chart1:
         st.markdown(
-            f'<div class="section-header">📊 แนวโน้มรายได้รายเดือน ปี {sel_rev_year or "-"}</div>',
+            f'<div class="section-header">📊 แนวโน้มรายได้รายเดือน (ปี: {sel_rev_year or "-"})</div>',
             unsafe_allow_html=True,
         )
-        if sel_rev_year:
-            # ดึงรายได้รายเดือนจาก fact_loads
-            df_monthly_rev = run_query(f"""
-                SELECT d.month, d.month_name, SUM(f.revenue) as monthly_revenue
-                FROM fact_loads f
-                JOIN dim_date d ON f.date_key = d.date_key
-                WHERE d.year = {sel_rev_year}
-                GROUP BY d.month, d.month_name
-                ORDER BY d.month
-            """)
-        else:
-            df_monthly_rev = pd.DataFrame()
+        
+        # ปรับการสร้างเงื่อนไข SQL สำหรับกราฟแท่งรายเดือนให้รองรับ "ทั้งหมด (All Years)"
+        df_monthly_rev = run_query(f"""
+            SELECT d.month, d.month_name, SUM(f.revenue) as monthly_revenue
+            FROM fact_loads f
+            JOIN dim_date d ON f.date_key = d.date_key
+            WHERE 1=1 {p2_year_clause}
+            GROUP BY d.month, d.month_name
+            ORDER BY d.month
+        """)
 
         if not df_monthly_rev.empty:
-            # กราฟแท่งใช้สีแดงสด #DB1A1A (เหมือน Top 10 รถบรรทุกที่เกิดอุบัติเหตุ)
+            # กราฟแท่งใช้สีแดงสด #DB1A1A
             fig_m_rev = px.bar(
                 df_monthly_rev,
                 x="month_name",
@@ -548,9 +545,9 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
             )
-            st.plotly_chart(fig_m_rev, use_container_width=True)
+            st.plotly_chart(fig_m_rev, width="stretch")
         else:
-            st.info("ไม่พบข้อมูลรายได้รายเดือนสำหรับปีนี้")
+            st.info("ไม่พบข้อมูลรายได้รายเดือนสำหรับเงื่อนไขที่เลือก")
 
     with col_chart2:
         st.markdown(
@@ -570,7 +567,7 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
         """)
         
         if not df_top_facilities.empty:
-            # กราฟวงกลมใช้โทนสี RdBu (เหมือน สัดส่วนประเภทอุบัติเหตุ)
+            # กราฟวงกลมใช้โทนสี RdBu
             fig_goods = px.pie(
                 df_top_facilities,
                 names="facility_name",
@@ -582,10 +579,9 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
             )
-            st.plotly_chart(fig_goods, use_container_width=True)
+            st.plotly_chart(fig_goods, width="stretch")
         else:
             st.info("ไม่พบข้อมูลสถานที่จัดส่งตามเงื่อนไขที่เลือก")
-            
 # =========================================================
 # PAGE 3 — FLEET MANAGEMENT & MAINTENANCE
 # =========================================================
