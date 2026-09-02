@@ -159,7 +159,7 @@ st.markdown(
     /* โทนสีแดง #DB1A1A */
     .kpi-sub-risk {
         font-size: 12px;
-        color: #DB1A1A;
+        color: #4FB7B3;
         font-weight: 600;
         font-family: 'Kanit', sans-serif !important;
     }
@@ -424,41 +424,44 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
         rev_years_list = (
             df_rev_years["year"].astype(str).tolist() if not df_rev_years.empty else []
         )
-       
-        if rev_years_list:
-            sel_rev_year = st.selectbox("เลือกปีที่ต้องการวิเคราะห์ (Year)", rev_years_list, key="p2_year_filter")
-        else:
-            sel_rev_year = None
-            st.warning("ไม่พบข้อมูลปีในฐานข้อมูล")
+        
+        # เพิ่มตัวเลือก "ทั้งหมด (All Years)" ไว้หน้าสุด
+        rev_years_list.insert(0, "ทั้งหมด (All Years)")
+        sel_rev_year = st.selectbox("เลือกปีที่ต้องการวิเคราะห์ (Year)", rev_years_list, key="p2_year_filter")
 
     with col_p2_2:
-        # ดึงรายชื่อเดือนที่มีข้อมูลตามปีที่เลือก
-        if sel_rev_year:
-            df_rev_months = run_query(f"""
-                SELECT DISTINCT d.month_name, d.month
-                FROM fact_loads f
-                JOIN dim_date d ON f.date_key = d.date_key
-                WHERE d.year = {sel_rev_year}
-                ORDER BY d.month
-            """)
-            rev_months_list = (
-                df_rev_months["month_name"].tolist() if not df_rev_months.empty else []
-            )
+        # ดึงรายชื่อเดือนตามปีที่เลือก (ถ้าเลือก "ทั้งหมด (All Years)" ให้ดึงเดือนที่มีข้อมูลทั้งหมด)
+        if sel_rev_year == "ทั้งหมด (All Years)" or not sel_rev_year:
+            year_where_clause = ""
         else:
-            rev_months_list = []
+            year_where_clause = f"WHERE d.year = {sel_rev_year}"
+
+        df_rev_months = run_query(f"""
+            SELECT DISTINCT d.month_name, d.month
+            FROM fact_loads f
+            JOIN dim_date d ON f.date_key = d.date_key
+            {year_where_clause}
+            ORDER BY d.month
+        """)
+        rev_months_list = (
+            df_rev_months["month_name"].tolist() if not df_rev_months.empty else []
+        )
 
         rev_months_list.insert(0, "ทั้งหมด (All Months)")
         sel_rev_month = st.selectbox("เลือกเดือนที่ต้องการวิเคราะห์ (Month)", rev_months_list, key="p2_month_filter")
 
     # สร้างเงื่อนไข SQL ตามตัวกรองที่เลือก
-    if sel_rev_year:
+    if sel_rev_year == "ทั้งหมด (All Years)":
+        p2_year_clause = ""
+    elif sel_rev_year:
         p2_year_clause = f"AND d.year = {sel_rev_year}"
-        p2_month_clause = (
-            "" if sel_rev_month == "ทั้งหมด (All Months)" else f"AND d.month_name = '{sel_rev_month}'"
-        )
-        p2_filter_clause = f"{p2_year_clause} {p2_month_clause}"
     else:
-        p2_filter_clause = "AND 1=0"
+        p2_year_clause = "AND 1=0"
+
+    p2_month_clause = (
+        "" if sel_rev_month == "ทั้งหมด (All Months)" else f"AND d.month_name = '{sel_rev_month}'"
+    )
+    p2_filter_clause = f"{p2_year_clause} {p2_month_clause}"
 
     st.markdown("<br>", unsafe_allow_html=True)
 
