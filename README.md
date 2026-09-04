@@ -257,6 +257,63 @@ Step 4: การวัดผลทางธุรกิจ (Business Intelligen
 
 
 ## ETL Process
+กระบวนการ ETL ในโปรเจกต์นี้ใช้ dbt เป็นหลักในการประมวลผลบน DuckDB เพื่อแปลงข้อมูลดิบจากการขนส่งให้เป็น Data Warehouse รูปแบบ Star Schema โดยแบ่งขั้นตอนอย่างละเอียดดังนี้
+### Step 1: Extract (การสกัดและนำเข้าข้อมูลดิบ)
+Ingestion: ดึงข้อมูลดิบเชิงการดำเนินงาน (Operational Data) จากไฟล์ CSV ต้นทาง เช่น fuel_purchases.csv, drivers.csv, trips.csv เข้าสู่ DuckDB โดยตรงในลักษณะ Raw Tables
+
+Data Lineage Integration: ในขั้นตอนแรกจะไม่มีการเปลี่ยนโครงสร้างข้อมูลต้นฉบับ แต่จะเพิ่มคอลัมน์ Metadata สำหรับการติดตามร่องรอยข้อมูล (Audit Columns) เข้าไปใน CTE raw_data:
+
+- stg_loads_at: บันทึกเวลาที่นำข้อมูลเข้าด้วย CURRENT_TIMESTAMP
+  
+- source_filename: บันทึกชื่อไฟล์ต้นทาง
+  
+- batch_id: บันทึกรหัสรอบของการประมวลผลข้อมูล (เช่น BATCH_2026)
+- 
+### Step 2: Transform - (Staging Layer: stg_)
+การประมวลผลใน Staging Layer เน้นการทำความสะอาดข้อมูลแบบ 1 ต่อ 1 ก่อนนำไปใช้งานต่อ ผ่าน 3 กระบวนการย่อย:
+
+- Text Standardization: ตัดช่องว่างด้วย TRIM() และปรับตัวอักษรเป็นพิมพ์ใหญ่ด้วย UPPER() บนคอลัมน์ที่เป็น Business Keys เช่น driver_id, truck_id, trip_id เพื่อป้องกันปัญหาคีย์ไม่จับคู่กันเนื่องจากเว้นวรรคหรือตัวพิมพ์ต่างกัน
+  
+- Safe Type Casting & Null Handling:
+  
+  ใช้ TRY_CAST() แปลง Data Type อย่างปลอดภัย เช่น แปลงวันที่ด้วย TRY_CAST(purchase_date AS DATE) หากมีข้อมูลผิดปกติระบบจะคืนค่าเป็น NULL แทนการรันล้มเหลว
+
+  ใช้ NULLIF(..., '') แปลงข้อความว่างเปล่าให้เป็น NULL
+
+  ใช้ COALESCE() ใส่ค่า Default เพื่อป้องกันค่าว่าง เช่น หากไม่มีชื่อเมืองให้ใส่ 'Unknown', ไม่มีรัฐให้ใส่ 'N/A' และใส่ 0.0 สำหรับคอลัมน์ตัวเลขเชิงคำนวณ (gallons, total_cost)
+
+- Key Validation & Deduplication:
+กรองเรคคอร์ดที่ขาด Primary Key ออกด้วย WHERE fuel_purchase_id IS NOT NULL
+จัดการข้อมูลซ้ำโดยใช้ Window Function ROW_NUMBER() OVER (PARTITION BY fuel_purchase_id ORDER BY stg_loaded_at) แล้วเลือกเฉพาะรายการแรกสุดที่เข้าสู่ระบบ (WHERE dup_rank = 1)
+
+### Step 3: Transform - (Core DW Layer: dim_ / fct_)
+เป็นการแปลงข้อมูลจาก Staging Layer ให้เป็นโครงสร้างมิติวิเคราะห์ (Star Schema) ในระดับ Core Data Warehouse:
+- Surrogate Key Hashing: แปลง Business Key ให้กลายเป็น Primary Key ประจำตารางมิติด้วยฟังก์ชัน Hash เช่น MD5(CAST(driver_id AS STRING)) ได้เป็น driver_key เพื่อป้องกันปัญหาคีย์เปลี่ยนแปลงจากระบบต้นทาง
+  
+- Business Logic & Metric Derivation:
+  
+  การสร้าง Attributes: รวมชื่อ-นามสกุลด้วย CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, ''))
+  
+  การสร้าง Flag: สร้างคอลัมน์ is_active (true/false) ด้วย CASE WHEN ตรวจสอบสถานะการทำงาน
+  
+  การคำนวณระยะเวลา: คำนวณอายุงาน tenure_years และอายุคนขับ age ด้วยฟังก์ชัน datediff('day', ...) หารด้วย 365.25
+  
+- Star Schema Separation:
+  
+  Dimension Tables (dim_): จัดเก็บข้อมูลบริบท เช่น dim_drivers, dim_truck, dim_route, dim_date
+  
+  Fact Tables (fct_): จัดเก็บธุรกรรมเชิงตัวเลข เช่น fct_fuel, fct_load, fct_delivery โดยดึง Surrogate Key จาก Dimension มาวางเป็น Foreign Key
+กำหนด materialized='table' ใน config ของ dbt เพื่อให้สร้างเป็น Physical Table บน DuckDB ช่วยให้การ JOIN ข้อมูลประมวลผลได้รวดเร็ว
+### Step 4: Load & Quality Assurance (การบันทึกและการตรวจสอบคุณภาพ)
+- Data Quality Testing: ควบคุมมาตรฐานข้อมูลก่อนนำไปใช้งานผ่านไฟล์ schema.yml และรันคำสั่ง dbt test เพื่อตรวจสอบ 3 เงื่อนไขหลัก:
+  
+- not_null: ตรวจสอบว่า Surrogate Key และ Foreign Key ห้ามเป็นค่าว่าง
+  
+- unique: ตรวจสอบว่า Primary Key ในทุกตารางมิติไม่ซ้ำกัน
+  
+- relationships: ตรวจสอบความสมบูรณ์ของ Foreign Key ระหว่าง Fact และ Dimension Tables (Referential Integrity)
+  
+- Serving Data: บันทึกผลลัพธ์ลงในไฟล์ fiveGexpress_duckdb เพื่อรอรับการยิง SQL Query ตรงไปยังตาราง dim_ และ fct_ ผ่านแอปพลิเคชัน Python Streamlit (fiveGdashboard_app.py)
 
 ## Data Cube Diagram
 
