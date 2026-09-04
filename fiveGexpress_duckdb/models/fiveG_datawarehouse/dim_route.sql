@@ -12,10 +12,9 @@ select
     origin_state,
     destination_city,
     destination_state,
-    typical_distance_miles,
-    base_rate_per_mile,
-    fuel_surcharge_rate,
-    typical_transit_days,
-    ingestion_timestamp as dim_created_at
+    typical_distance_miles as distance,
+    base_rate_per_mile as base_rate,
+    fuel_surcharge_rate as fuel_surcharge,
+    typical_transit_days as transit_days,
 
 from routes
