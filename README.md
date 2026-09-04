@@ -268,7 +268,7 @@ Data Lineage Integration: ในขั้นตอนแรกจะไม่ม
 - source_filename: บันทึกชื่อไฟล์ต้นทาง
   
 - batch_id: บันทึกรหัสรอบของการประมวลผลข้อมูล (เช่น BATCH_2026)
-- 
+  
 ### Step 2: Transform - (Staging Layer: stg_)
 การประมวลผลใน Staging Layer เน้นการทำความสะอาดข้อมูลแบบ 1 ต่อ 1 ก่อนนำไปใช้งานต่อ ผ่าน 3 กระบวนการย่อย:
 
