@@ -105,10 +105,6 @@ fact_delivery AS (
 
         s.detention_minutes AS detention,
 
-        NULL AS at_fault,
-
-        NULL AS injury
-
     FROM source AS s
 
     LEFT JOIN {{ ref('dim_date') }} AS d
@@ -127,7 +123,6 @@ fact_delivery AS (
         ON s.facility_id = f.facility_id
 
 )
-
 SELECT
     delivery_event_key,
     event_id,
@@ -144,8 +139,6 @@ SELECT
     delay_minutes,
     is_on_time,
     is_late,
-    detention,
-    at_fault,
-    injury
+    detention
 
 FROM fact_delivery
