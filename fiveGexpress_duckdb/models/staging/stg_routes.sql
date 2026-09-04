@@ -5,7 +5,7 @@ with raw as (
 
 cleaned as (
     select
-        nullif(trim(cast(route_id as varchar)), '') as route_id,
+        nullif(trim(upper(cast(route_id as varchar))), '') as route_id,
         nullif(trim(cast(origin_city as varchar)), '') as origin_city,
         nullif(trim(cast(origin_state as varchar)), '') as origin_state,
         nullif(trim(cast(destination_city as varchar)), '') as destination_city,

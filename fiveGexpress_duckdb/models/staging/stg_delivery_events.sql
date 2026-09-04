@@ -8,10 +8,10 @@ with source as (
 cleaned as (
 
     select
-        nullif(trim(cast(event_id as varchar)), '') as event_id,
-        nullif(trim(cast(trip_id as varchar)), '') as trip_id,
-        nullif(trim(cast(load_id as varchar)), '') as load_id,
-        nullif(trim(cast(facility_id as varchar)), '') as facility_id,
+        nullif(trim(upper(cast(event_id as varchar))), '') as event_id,
+        nullif(trim(upper(cast(trip_id as varchar))), '') as trip_id,
+        nullif(trim(upper(cast(load_id as varchar))), '') as load_id,
+        nullif(trim(upper(cast(facility_id as varchar))), '') as facility_id,
         nullif(trim(event_type), '') as event_type, 
         
         cast(scheduled_datetime as time) as scheduled_datetime, 

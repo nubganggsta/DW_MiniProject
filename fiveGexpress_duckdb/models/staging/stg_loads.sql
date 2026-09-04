@@ -8,9 +8,9 @@ with source as (
 cleaned as (
 
     select
-        nullif(trim(cast(load_id as varchar)), '') as load_id,
-        nullif(trim(cast(customer_id as varchar)), '') as customer_id,
-        nullif(trim(cast(route_id as varchar)), '') as route_id,
+        nullif(trim(upper(cast(load_id as varchar))), '') as load_id,
+        nullif(trim(upper(cast(customer_id as varchar))), '') as customer_id,
+        nullif(trim(upper(cast(route_id as varchar))), '') as route_id,
         cast(load_date as date) as load_date,
         nullif(trim(load_type), '') as load_type,
 

@@ -5,8 +5,8 @@ with raw as (
 
 cleaned as (
     select
-        nullif(trim(cast(maintenance_id as varchar)), '') as maintenance_id,
-        nullif(trim(cast(truck_id as varchar)), '') as truck_id,
+        nullif(trim(upper(cast(maintenance_id as varchar))), '') as maintenance_id,
+        nullif(trim(upper(cast(truck_id as varchar))), '') as truck_id,
         try_cast(maintenance_date as date) as maintenance_date,
         nullif(trim(cast(maintenance_type as varchar)), '') as maintenance_type,
         try_cast(odometer_reading as bigint) as odometer_reading,
