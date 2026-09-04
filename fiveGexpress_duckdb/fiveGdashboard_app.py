@@ -294,10 +294,33 @@ if menu == "📈 ภาพรวมการดำเนินงาน (Executi
     )
     fuel_cost = fuel_res.iloc[0, 0] if not fuel_res.empty else 0
 
+    # คำนวณอัตราการเติบโตของรายได้เทียบกับปีก่อนหน้า (YoY Growth Rate)
+    growth_label = "Total Revenue"
+    df_growth = run_query("""
+        SELECT d.year, SUM(f.revenue) as yearly_revenue
+        FROM fact_loads f
+        JOIN dim_date d ON f.date_key = d.date_key
+        WHERE d.year IS NOT NULL
+        GROUP BY d.year
+        ORDER BY d.year ASC
+    """)
+
+    if len(df_growth) >= 2:
+        prev_rev = df_growth.iloc[-2]["yearly_revenue"]
+        curr_rev = df_growth.iloc[-1]["yearly_revenue"]
+        if prev_rev > 0:
+            growth_pct = ((curr_rev - prev_rev) / prev_rev) * 100
+            if growth_pct > 0:
+                growth_label = f"🚀 เติบโตขึ้น (+{growth_pct:.1f}% YoY)"
+            elif growth_pct < 0:
+                growth_label = f"📉 ชะลอตัว ({growth_pct:.1f}% YoY)"
+            else:
+                growth_label = "คงที่ (0% YoY)"
+
     c1, c2, c3, c4 = st.columns(4)
     with c1:
         render_kpi_card(
-            "รายได้รวมทั้งหมด", f"฿{rev_val:,.2f}", "Total Revenue"
+            "รายได้รวมทั้งหมด", f"฿{rev_val:,.2f}", growth_label
         )
     with c2:
         render_kpi_card(
@@ -317,9 +340,58 @@ if menu == "📈 ภาพรวมการดำเนินงาน (Executi
 
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # ---------------------------------------------------------
+    # 2. Yearly Revenue Growth Trend Line Chart
+    # ---------------------------------------------------------
+    st.markdown(
+        '<div class="section-header">📈 แนวโน้มรายได้รวมของบริษัทในแต่ละปี (Yearly Revenue Growth Trend)</div>',
+        unsafe_allow_html=True,
+    )
+
+    df_yearly_rev = run_query("""
+        SELECT CAST(d.year AS VARCHAR) as year, SUM(f.revenue) as total_revenue
+        FROM fact_loads f
+        JOIN dim_date d ON f.date_key = d.date_key
+        WHERE d.year IS NOT NULL
+        GROUP BY d.year
+        ORDER BY d.year ASC
+    """)
+
+    if not df_yearly_rev.empty:
+        fig_rev_trend = px.line(
+            df_yearly_rev,
+            x="year",
+            y="total_revenue",
+            markers=True,
+            color_discrete_sequence=["#2E7D32"], # สีเขียวแสดงการเติบโต
+            labels={
+                "year": "ปี",
+                "total_revenue": "รายได้รวม (฿)",
+            },
+        )
+        # แสดงป้ายตัวเลขรายได้บนจุดของกราฟเส้น
+        fig_rev_trend.update_traces(
+            text=df_yearly_rev["total_revenue"],
+            texttemplate="฿%{text:,.2f}",
+            textposition="top center"
+        )
+        fig_rev_trend.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            margin=dict(l=0, r=0, t=30, b=0),
+        )
+        st.plotly_chart(fig_rev_trend, width="stretch")
+    else:
+        st.info("ไม่พบข้อมูลรายได้รายปี")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # ---------------------------------------------------------
+    # 3. Monthly Fuel Cost Trend & On-Time Ratio
+    # ---------------------------------------------------------
     col_chart1, col_chart2 = st.columns([1.6, 1])
 
-    # 2. Monthly Fuel Cost Trend
+    # Monthly Fuel Cost Trend
     with col_chart1:
         st.markdown(
             '<div class="section-header">แนวโน้มค่าใช้จ่ายน้ำมันรายเดือน (Monthly Fuel Cost Trend)</div>',
@@ -352,11 +424,11 @@ if menu == "📈 ภาพรวมการดำเนินงาน (Executi
                 plot_bgcolor="rgba(0,0,0,0)",
                 margin=dict(l=0, r=0, t=10, b=0),
             )
-            st.plotly_chart(fig_fuel, use_container_width=True)
+            st.plotly_chart(fig_fuel, width="stretch")
         else:
             st.info("ไม่พบข้อมูลค่าใช้จ่ายน้ำมันในช่วงเวลาที่เลือก")
 
-    # 3. On-Time Ratio
+    # On-Time Ratio
     with col_chart2:
         st.markdown(
             '<div class="section-header">สัดส่วนการส่งตรงเวลา (On-Time Ratio)</div>',
@@ -392,9 +464,7 @@ if menu == "📈 ภาพรวมการดำเนินงาน (Executi
                 plot_bgcolor="rgba(0,0,0,0)",
                 margin=dict(l=0, r=0, t=10, b=0),
             )
-            st.plotly_chart(fig_pie, use_container_width=True)
-
-
+            st.plotly_chart(fig_pie, width="stretch")
 # =========================================================
 # PAGE 2 — REVENUE ANALYSIS & TOP MONTH BREAKDOWN
 # =========================================================
@@ -488,7 +558,26 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
     # 2.3 รายได้เฉลี่ยต่อเที่ยว
     avg_rev_per_job = total_rev_p2 / total_jobs_p2 if total_jobs_p2 > 0 else 0.0
 
-    k1, k2, k3 = st.columns(3)
+    # 2.4 ดึงข้อมูลลูกค้าที่สร้างรายได้สูงสุด (Top Customer)
+    top_cust_res = run_query(f"""
+        SELECT c.customer_name, SUM(f.revenue) as total_revenue
+        FROM fact_loads f
+        JOIN dim_customers c ON f.customer_key = c.customer_key
+        JOIN dim_date d ON f.date_key = d.date_key
+        WHERE 1=1 {p2_filter_clause}
+        GROUP BY c.customer_name
+        ORDER BY total_revenue DESC
+        LIMIT 1
+    """)
+    if not top_cust_res.empty:
+        top_cust_name = top_cust_res.iloc[0]["customer_name"]
+        top_cust_rev = top_cust_res.iloc[0]["total_revenue"]
+        top_cust_sub = f"฿{top_cust_rev:,.2f}"
+    else:
+        top_cust_name = "-"
+        top_cust_sub = "Top Customer Revenue"
+
+    k1, k2, k3, k4 = st.columns(4)
     with k1:
         render_kpi_card(
             "รายได้รวมตามเงื่อนไข",
@@ -506,6 +595,12 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
             "รายได้เฉลี่ยต่อเที่ยว",
             f"฿{avg_rev_per_job:,.2f}",
             "Avg Revenue / Delivery",
+        )
+    with k4:
+        render_kpi_card(
+            "ลูกค้าที่สร้างรายได้สูงสุด",
+            top_cust_name,
+            top_cust_sub,
         )
 
     st.markdown("<br>", unsafe_allow_html=True)
@@ -582,6 +677,54 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
             st.plotly_chart(fig_goods, width="stretch")
         else:
             st.info("ไม่พบข้อมูลสถานที่จัดส่งตามเงื่อนไขที่เลือก")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # ---------------------------------------------------------
+    # 4. Top 10 Revenue Generating Customers
+    # ---------------------------------------------------------
+    st.markdown(
+        '<div class="section-header">💎 10 อันดับลูกค้าที่สร้างรายได้สูงสุดให้บริษัท (Top 10 Customers by Revenue)</div>',
+        unsafe_allow_html=True,
+    )
+
+    df_top_customers = run_query(f"""
+        SELECT c.customer_name, SUM(f.revenue) as total_revenue
+        FROM fact_loads f
+        JOIN dim_customers c ON f.customer_key = c.customer_key
+        JOIN dim_date d ON f.date_key = d.date_key
+        WHERE 1=1 {p2_filter_clause}
+        GROUP BY c.customer_name
+        ORDER BY total_revenue DESC
+        LIMIT 10
+    """)
+
+    if not df_top_customers.empty:
+        # แสดงเป็นกราฟแท่งแนวนอน (Horizontal Bar Chart)
+        fig_top_cust = px.bar(
+            df_top_customers,
+            x="total_revenue",
+            y="customer_name",
+            orientation="h",
+            text_auto=",.2f",
+            color="total_revenue",
+            color_continuous_scale="Reds",
+            labels={
+                "customer_name": "ชื่อลูกค้า",
+                "total_revenue": "รายได้รวม (฿)",
+            },
+        )
+        fig_top_cust.update_layout(
+            yaxis={"categoryorder": "total ascending"},
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            showlegend=False,
+            coloraxis_showscale=False,
+        )
+        st.plotly_chart(fig_top_cust, width="stretch")
+    else:
+        st.info("ไม่พบข้อมูลลูกค้ารายได้สูงสุดตามเงื่อนไขที่เลือก")
+        
 # =========================================================
 # PAGE 3 — FLEET MANAGEMENT & MAINTENANCE
 # =========================================================
