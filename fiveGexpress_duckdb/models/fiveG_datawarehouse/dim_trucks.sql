@@ -17,7 +17,7 @@ select
     truck_id as Truck_ID,
     unit_number as Unit_Number,
     make as Make,
-    cast(model_year as int) as Model_Year,
+    model_year,
     vin as VIN,
     fuel_type as Fuel_Type,
     status as Status,
