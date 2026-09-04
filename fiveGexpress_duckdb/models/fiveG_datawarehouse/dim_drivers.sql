@@ -1,7 +1,3 @@
-{{ config(
-    materialized='table'
-) }}
-
 with stg_drivers as (
     select * from {{ ref('stg_drivers') }}
 ),
