@@ -363,7 +363,7 @@ Data Lineage Integration: ในขั้นตอนแรกจะไม่ม
 
 - `dim_route`: ดึงข้อมูลจาก `stg_routes` และสร้าง `rouute_key` แบบ MD5 จาก `route_id` และเลือกเก็บข้อมูล `origin_city` , `origin_state`, `destination_city`, `destination_state` รวมถึงเปลี่ยนชื่อ typical_distance_miles เป็น distance , base_rate_per_mile เป็น base_rate, fuel_surcharge_rate เป็น fuel_surcharge และ typical_transit_days เป็น transit_days
 
--  `dim_trucks` : ดึงข้อมูลจก `stg_trucks` และสร้าง `truck_key` แบบ MD5 จาก `truck_id` จากนั้นจัดเก็บรายละเอียดของรถบรรทุก ได้แก่ truck_id, unit_number, make, model_year, VIN, fuel_type, status และ home_terminal  
+-  `dim_trucks` : ดึงข้อมูลจาก `stg_trucks` และสร้าง `truck_key` แบบ MD5 จาก `truck_id` จากนั้นจัดเก็บรายละเอียดของรถบรรทุก ได้แก่ truck_id, unit_number, make, model_year, VIN, fuel_type, status และ home_terminal  
 
 - `fact_delivery`: ดึงข้อมูลจาก `stg_delivery_events` และเชื่อมกับ `stg_trips` เพื่อเพิ่มข้อมูล `driver_id`, `truck_id` และ `dispaatch_date` และเชื่อมกับ `stg_loads` เพื่อเพิ่ม `customer_id` จากนั้นนำข้อมูลไป join กับ `dim_date`, `dim_customers`, `dim_drivers`, `dim_trucks` และ `dim_facilities` เพื่อสร้าง `date_key`, `customer_key`, `driver_key`, `truck_key` และ `facility_key` สำหรับเชื่อมข้อมูล จากนั้นสร้าง `delivery_event_key` ด้วย ROW_NUMBER() และให้ `trip_id` กับ `load_id` เป็น `degenerate key` พร้อมเปลี่ยนชื่อ scheduled_datetime เป็น scheduled_time, actual_datetime เป็น actual_time และ datention_minutes เป็น delay_minutes รวมถึงสร้าง is_on_time และ is_late เพื่อระบุว่าการจัดส่งตรงงเวลาหรือล่าช้า
 
