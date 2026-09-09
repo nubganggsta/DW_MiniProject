@@ -44,6 +44,35 @@ Phlapapon Kulto 673020626-9
 
 ## Data Model Diagram
 <img width="1942" height="1301" alt="Logistic_DataWarehouse-ER_OLTP" src="https://github.com/user-attachments/assets/fc02de57-2230-4ca9-8df6-9b931b5ad4cd" />
+
+### ตารางระบบการทำธุรกรรมขนส่งและโลจิสติกส์ (OLTP)
+Customers - ข้อมูลลูกค้าที่ใช้บริการขนส่งสินค้า
+
+Loads - รายละเอียดภาระงานหรือรายการสินค้าที่ต้องทำการขนส่งในแต่ละรอบ
+
+Routes - ข้อมูลเส้นทางการขนส่ง รวมถึงเมืองต้นทาง เมืองปลายทาง และระยะทาง
+
+Trips - รายละเอียดการเที่ยววิ่งรถแต่ละครั้งเพื่อทำการจัดส่งสินค้า
+
+Drivers - ข้อมูลประวัติและรายละเอียดของพนักงานขับรถ
+
+Trucks - ข้อมูลรถบรรทุกที่ใช้ในระบบการขนส่ง
+
+Trailers - ข้อมูลหางลากหรือส่วนพ่วงที่ใช้งานร่วมกับรถบรรทุก
+
+Facilities - ข้อมูลศูนย์กระจายสินค้า สถานที่จัดส่ง หรือคลังสินค้า
+
+Delivery_Events - บันทึกเหตุการณ์และสถานะต่างๆ ที่เกิดขึ้นในระหว่างขั้นตอนการจัดส่ง
+
+Fuel_purchases - ประวัติการซื้อหรือเติมน้ำมันเชื้อเพลิงของรถบรรทุก
+
+Safety_incidents - รายงานอุบัติเหตุหรือเหตุการณ์เกี่ยวกับความปลอดภัยที่เกิดขึ้นระหว่างการเดินทาง
+
+Maintainance_record - บันทึกประวัติการซ่อมบำรุงและดูแลรักษารถบรรทุก
+
+Driver_monthly_metrics - ข้อมูลสรุปตัววัดผลและประสิทธิภาพการทำงานรายเดือนของพนักงานขับรถ
+
+Truck_utilization_metrics - ข้อมูลสรุปตัวเลขการใช้งานและประสิทธิภาพของรถบรรทุกรายเดือน
 ### รายละเอียดชุดข้อมูล 
 ชุดข้อมูล Logistics Operations Database (2022–2024) บน Kaggle เป็นฐานข้อมูลจำลองการทำงานจริงของบริษัทรถบรรทุกขนาดใหญ่ (Class 8) ในสหรัฐฯ ครอบคลุมระยะเวลา 3 ปี รวมกว่า 85,000 ระเบียนใน 14 ตารางที่เชื่อมโยงกัน ออกแบบจากประสบการณ์จริง 12 ปีในสายงานโลจิสติกส์ เพื่อแก้ปัญหาความขาดแคลนชุดข้อมูลที่ซับซ้อนสมจริงโดยไม่ติดปัญหาความลับทางธุรกิจ (NDA)
 ### รายละเอียดข้อมูล 14 ตาราง 
@@ -310,6 +339,17 @@ Data Lineage Integration: ในขั้นตอนแรกจะไม่ม
 - Serving Data: บันทึกผลลัพธ์ลงในไฟล์ fiveGexpress_duckdb เพื่อรอรับการยิง SQL Query ตรงไปยังตาราง dim_ และ fct_ ผ่านแอปพลิเคชัน Python Streamlit (fiveGdashboard_app.py)
 
 ## Data Cube Diagram
+<img src="./readme_images/Fact_Delivery.png">
+    
+<img src="./readme_images/Fact_Fuel.png">
+
+<img src="./readme_images/Fact_Load.png">
+
+<img src="./readme_images/Fact_Maintenance.png">
+
+<img src="./readme_images/Fact_Safety_Incident.png">
+
+<img src="./readme_images/Fact_Trip.png">
 
 ## Data Warehouse Database
 
