@@ -7,9 +7,12 @@ import plotly.io as pio
 # =========================================================
 # CUSTOM SIDEBAR STYLING (RED THEME - FLOATING STYLE)
 # =========================================================
+
 st.markdown(
     """
+
     <style>
+    
     /* 1. ซ่อนพื้นหลังเดิมของ Container หลักใน Sidebar */
     [data-testid="stSidebar"] {
         background-color: transparent !important;
@@ -134,7 +137,7 @@ st.set_page_config(
 # ตั้งค่า Font Kanit ให้กับ Plotly Charts ทุกรูปในระบบ
 # ---------------------------------------------------------
 pio.templates.default = "plotly"
-pio.templates["plotly"].layout.font.family = "Kanit, sans-serif"
+pio.templates["plotly"].layout.font.family = "Prompt, sans-serif"
 
 # Custom Design System CSS (รวม Kanit Font, Color Palette & Layout)
 st.markdown(
@@ -281,7 +284,7 @@ with st.sidebar:
     menu = st.radio(
         "📌 เลือกหมวดหมู่การวิเคราะห์:",
         [
-            "📈 ภาพรวมการดำเนินงาน (Executive Overview)",
+            " ภาพรวมการดำเนินงาน (Executive Overview)",
             "💰 การวิเคราะห์รายได้และพฤติกรรมลูกค้า",
             "🚛 การบริหารจัดการกองรถและการซ่อมบำรุง",
             "⏱️ ประสิทธิภาพการจัดส่งและความตรงต่อเวลา",
@@ -311,8 +314,8 @@ with st.sidebar:
 # =========================================================
 # PAGE 1 — EXECUTIVE OVERVIEW
 # =========================================================
-if menu == "📈 ภาพรวมการดำเนินงาน (Executive Overview)":
-    st.title("📈 ภาพรวมการดำเนินงาน (Executive Overview)")
+if menu == " ภาพรวมการดำเนินงาน (Executive Overview)":
+    st.title(" ภาพรวมการดำเนินงาน (Executive Overview)")
     st.caption("สรุปดัชนีชี้วัดผลงานหลัก (KPIs) และแนวโน้มภาพรวมขององค์กร")
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -406,7 +409,7 @@ if menu == "📈 ภาพรวมการดำเนินงาน (Executi
             x="year",
             y="total_revenue",
             markers=True,
-            color_discrete_sequence=["#2E7D32"], # สีเขียวแสดงการเติบโต
+            color_discrete_sequence=["#8CC7C4"], # สีเขียวแสดงการเติบโต
             labels={
                 "year": "ปี",
                 "total_revenue": "รายได้รวม (฿)",
