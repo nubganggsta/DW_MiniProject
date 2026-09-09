@@ -349,6 +349,8 @@ Data Lineage Integration: ในขั้นตอนแรกจะไม่ม
 
 <img src="./readme_images/Fact_Safety_Incident.png">
 
+<img src="./readme_images/Fact_Trip.png">
+
 ## Data Warehouse Database
 
 - `dim_customers`: โหลดข้อมูลลูกค้าจาก `stg_customers` และสร้าง `customer_key` โดยใช้ค่า md5 hash จาก `customer_id` , เลือกคอลัมน์ที่ต้องการ และเปลี่ยนชื่อ credit_terms_days เป็น payment_terms, primary_freight_type เป็น primary_freight และ account_status เป็น `status`
