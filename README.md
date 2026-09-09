@@ -14,7 +14,7 @@ Thitisuda Daengseeda 673020491-6
 
 Phlapapon Kulto 673020626-9
 
-<img width="1942" height="1301" alt="Logistic_DataWarehouse-ER_OLTP" src="/workspaces/DW_MiniProject/readme_images/pipline.jpg"/>
+<img src="./readme_images/pipline.jpg">
 
 ## 🏗 Architecture & Design Principles
 
