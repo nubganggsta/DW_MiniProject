@@ -325,5 +325,7 @@ Data Lineage Integration: ในขั้นตอนแรกจะไม่ม
 
 - `dim_facilities `: ดึงข้อมูลจาก `stg_facilities` และสร้าง `facility_key` ด้วย md5 จาก `facility_id` 
 
+- `dim_route`: ดึงข้อมูลจาก `stg_routes` และสร้าง `rouute_key` แบบ MD5 จาก `route_id` และเลือกเก็บข้อมูล `origin_city` , `origin_state`, `destination_city`, `destination_state` รวมถึงเปลี่ยนชื่อ typical_distance_miles เป็น distance , base_rate_per_mile เป็น base_rate, fuel_surcharge_rate เป็น fuel_surcharge และ typical_transit_days เป็น transit_days
+
 
 ## Interactive Dashboard
