@@ -100,19 +100,19 @@ Phlapapon Kulto 673020626-9
 `Typical_transit_days`: ระยะเวลาเดินทางมาตรฐาน (วัน)
 
 #### Drivers (ข้อมูลพนักงานขับรถ)
-Driver_id: รหัสพนักงานขับรถ (PK)
+`Driver_id`: รหัสพนักงานขับรถ (PK)
 
-First_name / Last_name: ชื่อ-นามสกุล
+`First_name / Last_name`: ชื่อ-นามสกุล
 
-Hire_date / Termination_date: วันเข้าทำงาน และวันออก (ถ้ามี)
+`Hire_date / Termination_date`: วันเข้าทำงาน และวันออก (ถ้ามี)
 
-License_number / License_state: เลขใบขับขี่ และรัฐที่ออกใบอนุญาต
+`License_number / License_state`: เลขใบขับขี่ และรัฐที่ออกใบอนุญาต
 
-Date_of_birth: วันเกิด
+`Date_of_birth`: วันเกิด
 
-Home_terminal: ศูนย์ปฏิบัติการหลักที่สังกัด
+`Home_terminal`: ศูนย์ปฏิบัติการหลักที่สังกัด
 
-Employment_status: สถานะการทำงาน
+`Employment_status`: สถานะการทำงาน
 
 #### Trucks (ข้อมูลรถบรรทุก)
 Truck_id: รหัสรถบรรทุก (PK)
