@@ -215,32 +215,32 @@ Phlapapon Kulto 673020626-9
 `Injury_flag`: ตัวระบุการบาดเจ็บ (มี/ไม่มี)
 
 ### 4. กลุ่มข้อมูลสรุปตัววัดผล (Aggregated Analytics Data) ตารางคำนวณสรุปรายเดือนเพื่อใช้ทำ KPI แดชบอร์ด และรายงานผู้บริหาร
-Driver_monthly_metrics (สรุปผลงานคนขับรายเดือน)
+`Driver_monthly_metrics` (สรุปผลงานคนขับรายเดือน)
 
-Driver_id + Month: รหัสพนักงาน และเดือนที่สรุป (Composite Keys)
+`Driver_id + Month`: รหัสพนักงาน และเดือนที่สรุป (Composite Keys)
 
-Trips_completed / Total_miles: จำนวนเที่ยววิ่งที่สำเร็จ และระยะทางรวม
+`Trips_completed / Total_miles`: จำนวนเที่ยววิ่งที่สำเร็จ และระยะทางรวม
 
-Total_revenue: รายได้รวมที่คนขับทำได้
+`Total_revenue`: รายได้รวมที่คนขับทำได้
 
-Average_mpg / Total_fuel_gallons: ประสิทธิภาพประหยัดน้ำมันเฉลี่ย และปริมาณน้ำมันรวม
+`Average_mpg / Total_fuel_gallons`: ประสิทธิภาพประหยัดน้ำมันเฉลี่ย และปริมาณน้ำมันรวม
 
-On_time_delivery_rate: อัตราการส่งสินค้าตรงเวลา (%)
+`On_time_delivery_rate`: อัตราการส่งสินค้าตรงเวลา (%)
 
-Average_idle_hours: เวลาจอดติดเครื่องเฉลี่ย
+`Average_idle_hours`: เวลาจอดติดเครื่องเฉลี่ย
 
 #### Truck_utilization_metrics (สรุปการใช้งานรถบรรทุกรายเดือน)
-Truck_id + Month: รหัสรถบรรทุก และเดือนที่สรุป (Composite Keys)
+`Truck_id + Month`: รหัสรถบรรทุก และเดือนที่สรุป (Composite Keys)
 
-Trips_completed / Total_miles / Total_revenue: งานรวม, ระยะทางรวม, รายได้รวมของรถคันนั้น
+`Trips_completed / Total_miles / Total_revenue`: งานรวม, ระยะทางรวม, รายได้รวมของรถคันนั้น
 
-Average_mpg: อัตราสิ้นเปลืองน้ำมันเฉลี่ยของรถ
+`Average_mpg`: อัตราสิ้นเปลืองน้ำมันเฉลี่ยของรถ
 
-Maintenance_events / Maintenance_cost: จำนวนครั้งเข้าซ่อม และค่าซ่อมบำรุงรวม
+`Maintenance_events / Maintenance_cost`: จำนวนครั้งเข้าซ่อม และค่าซ่อมบำรุงรวม
 
-Downtime_hours: จำนวนชั่วโมงที่รถต้องจอดซ่อม (ใช้งานไม่ได้)
+`Downtime_hours`: จำนวนชั่วโมงที่รถต้องจอดซ่อม (ใช้งานไม่ได้)
 
-Utilization_rate: อัตราการถูกนำไปใช้งานจริงเทียบกับเวลาทั้งหมด (%)
+`Utilization_rate`: อัตราการถูกนำไปใช้งานจริงเทียบกับเวลาทั้งหมด (%)
 
 ### การดำเนินงานของธุรกิจ Logistics
 Step 1: ตั้งต้นจากลูกค้าและการจองงาน (Demand Generation)
