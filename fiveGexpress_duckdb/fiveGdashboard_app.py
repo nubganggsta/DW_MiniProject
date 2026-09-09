@@ -572,7 +572,7 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
     if not top_cust_res.empty:
         top_cust_name = top_cust_res.iloc[0]["customer_name"]
         top_cust_rev = top_cust_res.iloc[0]["total_revenue"]
-        top_cust_sub = f"฿{top_cust_rev:,.2f}"
+        top_cust_sub = f"${top_cust_rev:,.2f}"
     else:
         top_cust_name = "-"
         top_cust_sub = "Top Customer Revenue"
@@ -581,7 +581,7 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
     with k1:
         render_kpi_card(
             "รายได้รวมตามเงื่อนไข",
-            f"฿{total_rev_p2:,.2f}",
+            f"${total_rev_p2:,.2f}",
             f"ปี {sel_rev_year or '-'} ({sel_rev_month})",
         )
     with k2:
@@ -593,7 +593,7 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
     with k3:
         render_kpi_card(
             "รายได้เฉลี่ยต่อเที่ยว",
-            f"฿{avg_rev_per_job:,.2f}",
+            f"${avg_rev_per_job:,.2f}",
             "Avg Revenue / Delivery",
         )
     with k4:
@@ -634,7 +634,7 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
                 y="monthly_revenue",
                 text_auto=",sf",
                 color_discrete_sequence=["#DB1A1A"],
-                labels={"month_name": "เดือน", "monthly_revenue": "รายได้รวม (฿)"},
+                labels={"month_name": "เดือน", "monthly_revenue": "รายได้รวม ($)"},
             )
             fig_m_rev.update_layout(
                 paper_bgcolor="rgba(0,0,0,0)",
@@ -711,7 +711,7 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
             color_continuous_scale="Reds",
             labels={
                 "customer_name": "ชื่อลูกค้า",
-                "total_revenue": "รายได้รวม (฿)",
+                "total_revenue": "รายได้รวม ($)",
             },
         )
         fig_top_cust.update_layout(
@@ -724,6 +724,7 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
         st.plotly_chart(fig_top_cust, width="stretch")
     else:
         st.info("ไม่พบข้อมูลลูกค้ารายได้สูงสุดตามเงื่อนไขที่เลือก")
+
         
 # =========================================================
 # PAGE 3 — FLEET MANAGEMENT & MAINTENANCE
@@ -1231,7 +1232,113 @@ elif menu == "⏱️ ประสิทธิภาพการจัดส่�
             st.plotly_chart(fig_trk_rank, use_container_width=True)
         else:
             st.info("ไม่พบข้อมูลสถิติรถบรรทุก")
+    
+    # ---------------------------------------------------------
+    # [ส่วนที่เพิ่มใหม่] KPI Box & Chart เส้นทางการขนส่ง (Route) พร้อม Filter ปี/เดือน
+    # ---------------------------------------------------------
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown(
+        '<div class="section-header">🗺️ ประสิทธิภาพเส้นทางการขนส่ง (Route Load Performance)</div>',
+        unsafe_allow_html=True,
+    )
 
+    # 1. สร้าง Columns สำหรับ Selectbox กรองปีและเดือนเฉพาะส่วน Route
+    col_r_f1, col_r_f2 = st.columns(2)
+
+    df_route_years = run_query(
+        "SELECT DISTINCT d.year FROM fact_delivery f JOIN dim_date d ON f.date_key = d.date_key WHERE d.year IS NOT NULL ORDER BY d.year DESC"
+    )
+    route_years_list = df_route_years["year"].tolist() if not df_route_years.empty else []
+    route_years_list.insert(0, "ทั้งหมด")
+
+    with col_r_f1:
+        sel_route_year = st.selectbox("เลือกปี (Year)", route_years_list, key="route_year_filter")
+
+    route_year_sql = "" if sel_route_year == "ทั้งหมด" else f"AND d.year = {sel_route_year}"
+
+    with col_r_f2:
+        df_route_months = run_query(f"""
+            SELECT DISTINCT d.month_name, d.month 
+            FROM fact_delivery f JOIN dim_date d ON f.date_key = d.date_key 
+            WHERE 1=1 {route_year_sql} ORDER BY d.month
+        """)
+        route_months_list = df_route_months["month_name"].tolist() if not df_route_months.empty else []
+        route_months_list.insert(0, "ทั้งหมด")
+        sel_route_month = st.selectbox("เลือกเดือน (Month)", route_months_list, key="route_month_filter")
+
+    route_month_sql = "" if sel_route_month == "ทั้งหมด" else f"AND d.month_name = '{sel_route_month}'"
+    route_combined_clause = f"{route_year_sql} {route_month_sql}"
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # 2. แบ่ง Layout: ฝั่งซ้ายแสดง KPI Card อันดับ 1 / ฝั่งขวาแสดง กราฟ 10 อันดับ
+    col_route_kpi, col_route_chart = st.columns([1.2, 2])
+
+    with col_route_kpi:
+        # Query ดึงอันดับ 1
+        df_top1_route = run_query(f"""
+            SELECT 
+                CONCAT(r.origin_city, ' -> ', r.destination_city) AS top_route_name, 
+                COUNT(DISTINCT f.load_id_degenerate_key) AS load_count
+            FROM fact_delivery f
+            JOIN stg_loads l ON f.load_id_degenerate_key = l.load_id
+            JOIN dim_route r ON l.route_id = r.route_id
+            JOIN dim_date d ON f.date_key = d.date_key
+            WHERE 1=1 {route_combined_clause}
+            GROUP BY r.origin_city, r.destination_city
+            ORDER BY load_count DESC
+            LIMIT 1
+        """)
+
+        top_route_name = df_top1_route.iloc[0]["top_route_name"] if not df_top1_route.empty else "N/A"
+        top_route_count = df_top1_route.iloc[0]["load_count"] if not df_top1_route.empty else 0
+
+        # แสดง KPI Card
+        render_kpi_card(
+            "🏆 เส้นทางที่มี Load มากที่สุดอันดับ 1",
+            f"Route: {top_route_name}",
+            f"ปริมาณ: {top_route_count:,} Load",
+            is_risk=False
+        )
+
+    with col_route_chart:
+        # Query ดึง Top 10 Routes
+        df_top_routes = run_query(f"""
+            SELECT 
+                CONCAT(r.origin_city, ' -> ', r.destination_city) AS route_name, 
+                COUNT(DISTINCT f.load_id_degenerate_key) AS load_count
+            FROM fact_delivery f
+            JOIN stg_loads l ON f.load_id_degenerate_key = l.load_id
+            JOIN dim_route r ON l.route_id = r.route_id
+            JOIN dim_date d ON f.date_key = d.date_key
+            WHERE 1=1 {route_combined_clause}
+            GROUP BY r.origin_city, r.destination_city
+            ORDER BY load_count DESC
+            LIMIT 10
+        """)
+
+        if not df_top_routes.empty:
+            fig_route = px.bar(
+                df_top_routes,
+                x="load_count",
+                y="route_name",
+                orientation="h",
+                text_auto=True,
+                color_discrete_sequence=[bar_color] ,
+                labels={
+                    "load_count": "จำนวน Load (รายการ)",
+                    "route_name": "เส้นทางการขนส่ง"
+                },
+                title="10 อันดับ เส้นทางการขนส่งที่มีปริมาณ Load สูงสุด"
+            )
+            fig_route.update_layout(
+                yaxis={"categoryorder": "total ascending"},
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)"
+            )
+            st.plotly_chart(fig_route, use_container_width=True)
+        else:
+            st.info("ไม่พบข้อมูลเส้นทางการขนส่งตามตัวกรองที่เลือก")
 
 # =========================================================
 # PAGE 5 — FUEL & SAFETY ANALYSIS

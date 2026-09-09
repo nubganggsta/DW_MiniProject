@@ -33,7 +33,8 @@ loads AS (
 
     SELECT
         load_id,
-        customer_id
+        customer_id,
+        route_id  -- [เพิ่ม] ดึง route_id จาก stg_loads
     FROM {{ ref('stg_loads') }}
 
 ),
@@ -55,7 +56,8 @@ source AS (
         t.truck_id,
         t.dispatch_date,
 
-        l.customer_id
+        l.customer_id,
+        l.route_id  -- [เพิ่ม] ส่งผ่าน route_id
 
     FROM delivery_events AS de
 
@@ -90,6 +92,8 @@ fact_delivery AS (
         tr.truck_key,
 
         f.facility_key,
+
+        r.route_key,  -- [เพิ่ม] เก็บ route_key ใน Fact Table
 
         s.event_type,
 
@@ -126,6 +130,9 @@ fact_delivery AS (
     LEFT JOIN {{ ref('dim_facilities') }} AS f
         ON s.facility_id = f.facility_id
 
+    LEFT JOIN {{ ref('dim_route') }} AS r  -- [เพิ่ม] JOIN ไปยัง dim_route
+        ON s.route_id = r.route_id
+
 )
 
 SELECT
@@ -138,6 +145,7 @@ SELECT
     driver_key,
     truck_key,
     facility_key,
+    route_key,  -- [เพิ่ม] นำ route_key ออกมาใน SELECT ขั้นสุดท้าย
     event_type,
     scheduled_time,
     actual_time,
