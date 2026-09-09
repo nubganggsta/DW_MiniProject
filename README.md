@@ -204,15 +204,15 @@ Phlapapon Kulto 673020626-9
 `Facility_location`: สถานที่ซ่อมบำรุง
 
 #### Safety_incidents (บันทึกอุบัติเหตุและความเสี่ยง)
-Incident_id: รหัสเหตุการณ์อุบัติเหตุ (PK)
+`Incident_id`: รหัสเหตุการณ์อุบัติเหตุ (PK)
 
-Incident_date / Incident_type: วันที่เกิดเหตุ และประเภทอุบัติเหตุ
+`Incident_date / Incident_type`: วันที่เกิดเหตุ และประเภทอุบัติเหตุ
 
-Location_city: เมืองที่เกิดเหตุ
+`Location_city`: เมืองที่เกิดเหตุ
 
-At_fault_flag: ตัวระบุความผิด (ใช่/ไม่ใช่)
+`At_fault_flag`: ตัวระบุความผิด (ใช่/ไม่ใช่)
 
-Injury_flag: ตัวระบุการบาดเจ็บ (มี/ไม่มี)
+`Injury_flag`: ตัวระบุการบาดเจ็บ (มี/ไม่มี)
 
 ### 4. กลุ่มข้อมูลสรุปตัววัดผล (Aggregated Analytics Data) ตารางคำนวณสรุปรายเดือนเพื่อใช้ทำ KPI แดชบอร์ด และรายงานผู้บริหาร
 Driver_monthly_metrics (สรุปผลงานคนขับรายเดือน)
