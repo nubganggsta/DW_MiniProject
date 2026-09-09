@@ -339,11 +339,13 @@ Data Lineage Integration: ในขั้นตอนแรกจะไม่ม
 - Serving Data: บันทึกผลลัพธ์ลงในไฟล์ fiveGexpress_duckdb เพื่อรอรับการยิง SQL Query ตรงไปยังตาราง dim_ และ fct_ ผ่านแอปพลิเคชัน Python Streamlit (fiveGdashboard_app.py)
 
 ## Data Cube Diagram
-<img src="./readme_images/Fact_Delivery.png
+<img src="./readme_images/Fact_Delivery.png">
     
 <img src="./readme_images/Fact_Fuel.png">
 
 <img src="./readme_images/Fact_Load.png">
+
+<img src="./readme_images/Fact_Maintenance.png">
 
 ## Data Warehouse Database
 
