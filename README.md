@@ -342,4 +342,5 @@ Data Lineage Integration: ในขั้นตอนแรกจะไม่ม
 - `fact_trips`: ดึงข้อมูลจาก `stg_trips` และเชื่อมกับ `stg_loads` ผ่าน  `load_id` เพื่อดึง `customer_id` จากนั้นสร้าง `trip_key` แบบลำดับด้วย ROW_NUMBER() จาก `trip_id` และใช้ `load_id` เป็น `Degenerate Key` (load_id_degenerate_key) จากนั้นเชื่อม `dim_date` เพื่อสร้าง `date_key` , `dim_drivers` เพื่อสร้าง `driver_key` , `dim_trucks` เพื่อสร้าง `truck_key` และ `dim_customers` เพื่อสร้าง `customer_key` จากนั้นกำหนด `trip_count เป็น 1` เพื่อใช้สำหรับนับจำนวนเที่ยวขนส่ง และเก็บ miles, downtime โดยเปลี่ยนชื่อจาก actual_distance_miles และ idle_time_hours ตามลำดับ
 
 - `dim_date`: สร้าง `Date Dimension` ตั้งแต่วันที่ 1950-01-01 ถึง 2030-12-31 โดยใช้ `generate_series` เพื่อสร้างรายการวันที่ต่อเนื่องทุกวัน จากนั้นสร้าง `date_key` ในรูปแบบตัวเลข YYYYMMDD และเก็บข้อมูลวันที่ ได้แก่ วันที่เต็ม (full_date), วันที่ของเดือน (day), เดือน (month), ชื่อเดือน (month_name), ไตรมาส (quarter) และปี (year)
+  
 ## Interactive Dashboard
