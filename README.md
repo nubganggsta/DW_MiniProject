@@ -56,19 +56,20 @@ Phlapapon Kulto 673020626-9
 #### โครงสร้างฐานข้อมูลแบ่งตามหน้าที่ทางธุรกิจออกเป็น 3 กลุ่มหลัก รวม 14 ตาราง โดยมีรายละเอียดตารางและ Attributes ดังนี้
 1. กลุ่มข้อมูลหลักและทรัพยากร (Master & Entity Data) เก็บข้อมูลพื้นฐานของทรัพย์สิน บุคลากร ลูกค้า และเส้นทาง เพื่อใช้อ้างอิงในกิจกรรมอื่นๆ
 #### Customers (ข้อมูลลูกค้า/ผู้ว่าจ้าง)
-Customer_id: รหัสลูกค้า (PK)
 
-Customer_name / Customer_type: ชื่อลูกค้า และประเภทธุรกิจลูกค้า
+`Customer_id`: รหัสลูกค้า (PK)
 
-Credit_terms_days: ระยะเวลาเครดิตเทอมชำระเงิน (วัน)
+`Customer_name` / `Customer_type`: ชื่อลูกค้า และประเภทธุรกิจลูกค้า
 
-Primary_freight_type: ประเภทสินค้าหลักที่ว่าจ้างขนส่ง
+`Credit_terms_days`: ระยะเวลาเครดิตเทอมชำระเงิน (วัน)
 
-Account_status: สถานะบัญชีลูกค้า (เช่น Active, Inactive)
+`Primary_freight_type`: ประเภทสินค้าหลักที่ว่าจ้างขนส่ง
 
-Contract_starts_date: วันเริ่มสัญญา
+`Account_status`: สถานะบัญชีลูกค้า (เช่น Active, Inactive)
 
-Annual_revenue_potential: ประมาณการรายได้ต่อปีจากลูกค้ารายนี้
+`Contract_starts_date`: วันเริ่มสัญญา
+
+`Annual_revenue_potential`: ประมาณการรายได้ต่อปีจากลูกค้ารายนี้
 
 #### Facilities (ศูนย์กระจายสินค้า/คลังสินค้า)
 Facility_id: รหัสสถานที่ (PK)
