@@ -72,17 +72,17 @@ Phlapapon Kulto 673020626-9
 `Annual_revenue_potential`: ประมาณการรายได้ต่อปีจากลูกค้ารายนี้
 
 #### Facilities (ศูนย์กระจายสินค้า/คลังสินค้า)
-Facility_id: รหัสสถานที่ (PK)
+`Facility_id`: รหัสสถานที่ (PK)
 
-Facility_name: ชื่อศูนย์/คลังสินค้า
+`Facility_name`: ชื่อศูนย์/คลังสินค้า
 
-City / State: เมือง และรัฐที่ตั้ง
+`City / State`: เมือง และรัฐที่ตั้ง
 
-Latitude / Longitude: พิกัดภูมิศาสตร์
+`Latitude / Longitude`: พิกัดภูมิศาสตร์
 
-Dock_doors: จำนวนช่องโหลดสินค้า
+`Dock_doors`: จำนวนช่องโหลดสินค้า
 
-Operating_hours: เวลาทำการ
+`Operating_hours`: เวลาทำการ
 
 #### Routes (เส้นทางขนส่งมาตรฐาน)
 Route_id: รหัสเส้นทาง (PK)
