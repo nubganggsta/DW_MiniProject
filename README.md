@@ -340,6 +340,7 @@ Data Lineage Integration: ในขั้นตอนแรกจะไม่ม
 
 ## Data Cube Diagram
 <img src="./readme_images/Fact_Delivery.png">
+<img src="./readme_images/Fact_Fuel.png">
 
 ## Data Warehouse Database
 
