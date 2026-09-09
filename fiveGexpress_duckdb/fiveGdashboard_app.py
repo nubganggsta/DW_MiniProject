@@ -1,25 +1,69 @@
+import streamlit as st
 import duckdb
 import pandas as pd
 import plotly.express as px
 import plotly.io as pio
-import streamlit as st
-
-import streamlit as st
-
-st.set_page_config(layout="wide")
 
 # =========================================================
-# CUSTOM SIDEBAR STYLING (RED THEME)
+# CUSTOM SIDEBAR STYLING (RED THEME - FLOATING STYLE)
 # =========================================================
 st.markdown(
     """
     <style>
-    /* 1. เปลี่ยนสีพื้นหลัง Sidebar เป็นสีแดง (Gradient ลุคพรีเมียม) */
+    /* 1. ซ่อนพื้นหลังเดิมของ Container หลักใน Sidebar */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #B30000 0%, #800000 100%) !important;
+        background-color: transparent !important;
     }
 
-    /* 2. ปรับแต่งข้อความทั่วไปใน Sidebar ให้เป็นสีขาว */
+    /* 2. ปรับแต่ง Sidebar ให้เป็นแบบ Floating */
+    [data-testid="stSidebar"] > div:first-child {
+        background: linear-gradient(180deg, #B30000 0%, #800000 100%) !important;
+        margin: 15px 0px 15px 15px !important;
+        height: calc(100vh - 30px) !important;
+        border-radius: 20px !important;
+        box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.25) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        padding-top: 10px !important;
+    }
+
+    /* ---------------------------------------------------------
+       [ส่วนที่แก้ปัญหาข้อความ keyboard_double_...]
+       ปรับแต่งปุ่ม Toggle / Collapse Sidebar ให้เป็นกากบาท (✕) หรือลูกศรสวยงาม
+       --------------------------------------------------------- */
+    /* ซ่อนข้อความไอคอนเดิมที่เสีย/ล้น */
+    [data-testid="stSidebarCollapseButton"] span,
+    [data-testid="stSidebarCollapseButton"] i {
+        font-size: 0px !important;
+        display: none !important;
+    }
+
+    /* ใส่ไอคอนใหม่ (กากบาท ✕ หรือ ลูกศร ◀) แทนที่ */
+    [data-testid="stSidebarCollapseButton"] button::after {
+        content: "✕"; /* เปลี่ยนเป็น "◀" หรือ "✖" ได้ตามใจชอบ */
+        font-size: 18px !important;
+        font-weight: bold !important;
+        color: #FFFFFF !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* จัดสไตล์ปุ่มให้ดูละมุนและเป็นวงกลม */
+    [data-testid="stSidebarCollapseButton"] button {
+        background-color: rgba(255, 255, 255, 0.2) !important;
+        border-radius: 50% !important;
+        width: 32px !important;
+        height: 32px !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+    }
+
+    [data-testid="stSidebarCollapseButton"] button:hover {
+        background-color: rgba(255, 255, 255, 0.4) !important;
+        transform: scale(1.1);
+    }
+
+    /* 3. ปรับแต่งข้อความทั่วไปใน Sidebar ให้เป็นสีขาว */
     [data-testid="stSidebar"] *, 
     [data-testid="stSidebar"] p, 
     [data-testid="stSidebar"] span, 
@@ -28,7 +72,7 @@ st.markdown(
         font-weight: 500;
     }
 
-    /* 3. ปรับแต่งหัวข้อหลักและ Header ใน Sidebar */
+    /* 4. ปรับแต่งหัวข้อหลักและ Header ใน Sidebar */
     [data-testid="stSidebar"] h1, 
     [data-testid="stSidebar"] h2, 
     [data-testid="stSidebar"] h3 {
@@ -37,38 +81,39 @@ st.markdown(
         text-shadow: 0px 2px 4px rgba(0,0,0,0.3);
     }
 
-    /* 4. ปรับแต่ง Radio Button (ตัวเลือกหมวดหมู่) ให้สวยงาม */
+    /* 5. ปรับแต่ง Radio Button */
     [data-testid="stSidebar"] div[role="radiogroup"] > label {
         background-color: rgba(255, 255, 255, 0.1);
         padding: 10px 14px;
-        border-radius: 8px;
-        margin-bottom: 6px;
+        border-radius: 12px;
+        margin-bottom: 8px;
         transition: all 0.3s ease;
         border: 1px solid rgba(255, 255, 255, 0.15);
     }
 
-    /* เมื่อเอาเมาส์ไปชี้ที่ตัวเลือก */
     [data-testid="stSidebar"] div[role="radiogroup"] > label:hover {
         background-color: rgba(255, 255, 255, 0.25);
+        transform: translateX(4px);
         cursor: pointer;
     }
 
-    /* 5. ปรับแต่ง Dropdown (Selectbox ตัวกรองปี) */
+    /* 6. ปรับแต่ง Dropdown Selectbox */
     [data-testid="stSidebar"] div[data-baseweb="select"] > div {
         background-color: #FFFFFF !important;
-        border-radius: 8px;
+        border-radius: 10px;
         border: none !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     
-    /* ตัวอักษรภายใน Dropdown ให้เป็นสีเข้มเพื่อให้เห็นชัดเจน */
     [data-testid="stSidebar"] div[data-baseweb="select"] * {
         color: #1A1D20 !important;
         font-weight: 600;
     }
 
-    /* 6. เส้นแบ่ง Divider ให้เป็นสีขาวโปร่งแสง */
+    /* 7. เส้นแบ่ง Divider */
     [data-testid="stSidebar"] hr {
         border-color: rgba(255, 255, 255, 0.2) !important;
+        margin: 15px 0 !important;
     }
     </style>
     """,
@@ -186,8 +231,6 @@ st.markdown(
 """,
     unsafe_allow_html=True,
 )
-
-
 
 
 # Reusable Helper Component for KPI Cards
@@ -725,7 +768,7 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
     else:
         st.info("ไม่พบข้อมูลลูกค้ารายได้สูงสุดตามเงื่อนไขที่เลือก")
 
-        
+
 # =========================================================
 # PAGE 3 — FLEET MANAGEMENT & MAINTENANCE
 # =========================================================
