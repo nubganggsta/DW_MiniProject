@@ -115,93 +115,93 @@ Phlapapon Kulto 673020626-9
 `Employment_status`: สถานะการทำงาน
 
 #### Trucks (ข้อมูลรถบรรทุก)
-Truck_id: รหัสรถบรรทุก (PK)
+`Truck_id`: รหัสรถบรรทุก (PK)
 
-Unit_number: หมายเลขประจำรถ
+`Unit_number`: หมายเลขประจำรถ
 
-Make / Model_year: ยี่ห้อ และปีที่ผลิต
+`Make / Model_year`: ยี่ห้อ และปีที่ผลิต
 
-Vin: เลขตัวรถ (Vehicle Identification Number)
+`Vin`: เลขตัวรถ (Vehicle Identification Number)
 
-Acquisition_date / Acquisition_mileage: วันที่จัดซื้อ และเลขไมล์ ณ วันซื้อ
+`Acquisition_date / Acquisition_mileage`: วันที่จัดซื้อ และเลขไมล์ ณ วันซื้อ
 
-Fuel_type / Tank_capacity_gallons: ประเภทน้ำมัน และความจุถังน้ำมัน (แกลลอน)
+`Fuel_type / Tank_capacity_gallons`: ประเภทน้ำมัน และความจุถังน้ำมัน (แกลลอน)
 
-Status: สถานะรถ (เช่น พร้อมใช้งาน, ซ่อมบำรุง)
+`Status`: สถานะรถ (เช่น พร้อมใช้งาน, ซ่อมบำรุง)
 
 #### Trailers (ข้อมูลหางลาก/ตู้พ่วง)
-Trailer_id: รหัสหางลาก (PK)
+`Trailer_id`: รหัสหางลาก (PK)
 
-Trailer_number / Trailer_type: หมายเลขหางลาก และประเภทตู้ (เช่น Dry Van, Reefer)
+`Trailer_number / Trailer_type`: หมายเลขหางลาก และประเภทตู้ (เช่น Dry Van, Reefer)
 
-Length_feet: ความยาวตู้ (ฟุต)
+`Length_feet`: ความยาวตู้ (ฟุต)
 
-Model_year / Vin: ปีที่ผลิต และเลขตัวถัง
+`Model_year / Vin`: ปีที่ผลิต และเลขตัวถัง
 
-Acquisition_date: วันที่จัดซื้อ
+`Acquisition_date`: วันที่จัดซื้อ
 
-Status / Current_location: สถานะใช้งาน และสถานที่อยู่ปัจจุบัน
+`Status / Current_location`: สถานะใช้งาน และสถานที่อยู่ปัจจุบัน
 
 ### 3. กลุ่มรายการปฏิบัติการและค่าใช้จ่าย (Transactional Data) บันทึกเหตุการณ์ที่เกิดขึ้นจริงในการทำงานแต่ละวัน
 #### Loads (ใบสั่งงาน/ภาระสินค้า)
-Load_id: รหัสใบสั่งงาน (PK)
+`Load_id`: รหัสใบสั่งงาน (PK)
 
-Load_date: วันที่รับออเดอร์
+`Load_date`: วันที่รับออเดอร์
 
-Load_type: ประเภทการบรรทุก (เช่น Full Truckload - FTL)
+`Load_type`: ประเภทการบรรทุก (เช่น Full Truckload - FTL)
 
-Weight_lbs / Pieces: น้ำหนัก (ปอนด์) และจำนวนชิ้นสินค้า
+`Weight_lbs / Pieces`: น้ำหนัก (ปอนด์) และจำนวนชิ้นสินค้า
 
-Revenue / Fuel_surcharge / Accessorial_charges: ค่าขนส่งหลัก, ค่าธรรมเนียมน้ำมัน, และค่าบริการเพิ่มเติม
+`Revenue / Fuel_surcharge / Accessorial_charges`: ค่าขนส่งหลัก, ค่าธรรมเนียมน้ำมัน, และค่าบริการเพิ่มเติม
 
 #### Trips (เที่ยววิ่งจริง)
-Trip_id: รหัสเที่ยววิ่ง (PK)
+`Trip_id`: รหัสเที่ยววิ่ง (PK)
 
-Dispatch_date: วันที่ปล่อยรถออกปฏิบัติงาน
+`Dispatch_date`: วันที่ปล่อยรถออกปฏิบัติงาน
 
-Actual_distance_miles / Actual_duration_hours: ระยะทางจริง (ไมล์) และเวลาที่ใช้จริง (ชั่วโมง)
+`Actual_distance_miles / Actual_duration_hours`: ระยะทางจริง (ไมล์) และเวลาที่ใช้จริง (ชั่วโมง)
 
-Fuel_gallons_used / Average_mpg: ปริมาณน้ำมันที่ใช้ และอัตราสิ้นเปลืองเฉลี่ย (ไมล์/แกลลอน)
+`Fuel_gallons_used / Average_mpg`: ปริมาณน้ำมันที่ใช้ และอัตราสิ้นเปลืองเฉลี่ย (ไมล์/แกลลอน)
 
-Idle_time_hours: เวลาที่จอดสตาร์ทเครื่องทิ้งไว้
+`Idle_time_hours`: เวลาที่จอดสตาร์ทเครื่องทิ้งไว้
 
-Trip_status: สถานะเที่ยววิ่ง (เช่น Completed, In Transit)
+`Trip_status`: สถานะเที่ยววิ่ง (เช่น Completed, In Transit)
 
 #### Delivery_events (สถานะจุดรับ-ส่งสินค้า)
-Event_id: รหัสเหตุการณ์ (PK)
+`Event_id`: รหัสเหตุการณ์ (PK)
 
-Event_type: ประเภทเหตุการณ์ (เช่น Pickup, Delivery)
+`Event_type`: ประเภทเหตุการณ์ (เช่น Pickup, Delivery)
 
-Scheduled_datetime / Actual_datetime: เวลาที่นัดหมาย และเวลาที่ไปถึงจริง
+`Scheduled_datetime / Actual_datetime`: เวลาที่นัดหมาย และเวลาที่ไปถึงจริง
 
-Detention_minutes: เวลาที่ต้องรอคอย ณ จุดรับส่ง (นาที)
+`Detention_minutes`: เวลาที่ต้องรอคอย ณ จุดรับส่ง (นาที)
 
-On_time_flag: ตัวชี้วัดการตรงต่อเวลา (Yes/No)
+`On_time_flag`: ตัวชี้วัดการตรงต่อเวลา (Yes/No)
 
-Location_city: เมืองที่เกิดเหตุการณ์
+`Location_cit`y: เมืองที่เกิดเหตุการณ์
 
 #### Fuel_purchases (ประวัติการเติมน้ำมัน)
-Fuel_purchases_id: รหัสการซื้อน้ำมัน (PK)
+`Fuel_purchases_id`: รหัสการซื้อน้ำมัน (PK)
 
-Purchase_date: วันที่ซื้อ
+`Purchase_date`: วันที่ซื้อ
 
-Location_city / Location_state: สถานีบริการน้ำมัน (เมือง/รัฐ)
+`Location_city / Location_state`: สถานีบริการน้ำมัน (เมือง/รัฐ)
 
-Gallons / Price_per_gallons: จำนวนแกลลอน และราคาต่อแกลลอน
+`Gallons / Price_per_gallons`: จำนวนแกลลอน และราคาต่อแกลลอน
 
-Total_cost: ค่าใช้จ่ายน้ำมันรวม
+`Total_cost`: ค่าใช้จ่ายน้ำมันรวม
 
-Maintenance_records (ประวัติการซ่อมบำรุง)
+`Maintenance_records`: (ประวัติการซ่อมบำรุง)
 
-Maintenance_id: รหัสการซ่อมบำรุง (PK)
+`Maintenance_id`: รหัสการซ่อมบำรุง (PK)
 
-Maintenance_date / Maintenance_type: วันที่ซ่อม และประเภทการซ่อม (เช่น สี่งซ่อมตามระยะ Preventive, ซ่อมฉุกเฉิน)
+`Maintenance_date / Maintenance_type`: วันที่ซ่อม และประเภทการซ่อม (เช่น สี่งซ่อมตามระยะ Preventive, ซ่อมฉุกเฉิน)
 
-Odometer_reading: เลขไมล์ขณะเข้าซ่อม
+`Odometer_reading`: เลขไมล์ขณะเข้าซ่อม
 
-Labor_hours / Labor_cost / Parts_cost / Total_cost: ชั่วโมงแรงงานช่าง, ค่าแรง, ค่าอะไหล่ และราคารวม
+`Labor_hours / Labor_cost / Parts_cost / Total_cost`: ชั่วโมงแรงงานช่าง, ค่าแรง, ค่าอะไหล่ และราคารวม
 
-Facility_location: สถานที่ซ่อมบำรุง
+`Facility_location`: สถานที่ซ่อมบำรุง
 
 #### Safety_incidents (บันทึกอุบัติเหตุและความเสี่ยง)
 Incident_id: รหัสเหตุการณ์อุบัติเหตุ (PK)
