@@ -8,11 +8,11 @@ with source as (
 cleaned as (
 
     select
-        nullif(trim(cast(trip_id as varchar)), '') as trip_id,
-        nullif(trim(cast(driver_id as varchar)), '') as driver_id,
-        nullif(trim(cast(truck_id as varchar)), '') as truck_id,
-        nullif(trim(cast(trailer_id as varchar)), '') as trailer_id,
-        nullif(trim(cast(load_id as varchar)), '') as load_id,
+        nullif(trim(upper(cast(trip_id as varchar))), '') as trip_id,
+        nullif(trim(upper(cast(driver_id as varchar))), '') as driver_id,
+        nullif(trim(upper(cast(truck_id as varchar))), '') as truck_id,
+        nullif(trim(upper(cast(trailer_id as varchar))), '') as trailer_id,
+        nullif(trim(upper(cast(load_id as varchar))), '') as load_id,
 
         cast(dispatch_date as date) as dispatch_date,
 
