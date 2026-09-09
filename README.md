@@ -85,19 +85,19 @@ Phlapapon Kulto 673020626-9
 `Operating_hours`: เวลาทำการ
 
 #### Routes (เส้นทางขนส่งมาตรฐาน)
-Route_id: รหัสเส้นทาง (PK)
+`Route_id`: รหัสเส้นทาง (PK)
 
-Origin_city / Origin_state: เมืองและรัฐต้นทาง
+`Origin_city / Origin_state`: เมืองและรัฐต้นทาง
 
-Destination_city / Destination_state: เมืองและรัฐปลายทาง
+`Destination_city / Destination_state`: เมืองและรัฐปลายทาง
 
-Typical_distance_miles: ระยะทางมาตรฐาน (ไมล์)
+`Typical_distance_miles`: ระยะทางมาตรฐาน (ไมล์)
 
-Base_rate_per_mile: ค่าบริการพื้นฐานต่อไมล์
+`Base_rate_per_mile`: ค่าบริการพื้นฐานต่อไมล์
 
-Fuel_surcharge_rate: อัตราค่าธรรมเนียมน้ำมันผันแปร
+`Fuel_surcharge_rate`: อัตราค่าธรรมเนียมน้ำมันผันแปร
 
-Typical_transit_days: ระยะเวลาเดินทางมาตรฐาน (วัน)
+`Typical_transit_days`: ระยะเวลาเดินทางมาตรฐาน (วัน)
 
 #### Drivers (ข้อมูลพนักงานขับรถ)
 Driver_id: รหัสพนักงานขับรถ (PK)
