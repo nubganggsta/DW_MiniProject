@@ -318,6 +318,7 @@ Data Lineage Integration: ในขั้นตอนแรกจะไม่ม
 ## Data Cube Diagram
 
 ## Data Warehouse Database
+dim_customers: โหลดข้อมูลลูกค้าจาก stg_customers และสร้าง customer_key โดยใช้ค่า md5 hash จาก customer_id, เลือกคอลัมน์ที่ต้องการ และเปลี่ยนชื่อ credit_terms_days เป็น payment_terms, primary_freight_type เป็น primary_freight และ account_status เป็น status
 dim_drivers: ดึงข้อมูลจาก stg_drivers และสร้าง driver_key แบบ MD5 จาก driver_id จากนั้นสร้าง full_name จาก first_name และ last_name พร้อมเก็บข้อมูล hire_date,termination_date,license,home_terminal และคำนวณ experience โดยคำนวณจาก hire_date ถึง termination_date 
 
 ## Interactive Dashboard
