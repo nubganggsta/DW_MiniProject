@@ -828,36 +828,60 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
     st.caption("ติดตามการใช้งานรถบรรทุก สถิติการวิ่ง และต้นทุนการบำรุงรักษา")
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Local Year & Month Filter
+    # ---------------------------------------------------------
+    # Local Year, Quarter & Month Filter (Maintenance Filter)
+    # ---------------------------------------------------------
     st.markdown(
         '<div class="section-header">ตัวกรองเวลาค่าซ่อมบำรุง (Maintenance Filter)</div>',
         unsafe_allow_html=True,
     )
-    col_f1, col_f2 = st.columns(2)
+    col_f1, col_f2, col_f3 = st.columns(3)
 
+    # 1. Select Year
     df_maint_years = run_query(
         "SELECT DISTINCT d.year FROM fact_maintenance f JOIN dim_date d ON f.date_key = d.date_key WHERE d.year IS NOT NULL ORDER BY d.year DESC"
     )
     maint_years = (
-        df_maint_years["year"].tolist() if not df_maint_years.empty else []
+        df_maint_years["year"].astype(str).tolist() if not df_maint_years.empty else []
     )
     maint_years.insert(0, "ทั้งหมด")
 
     with col_f1:
         sel_maint_year = st.selectbox("เลือกปี (Year)", maint_years, key="m_year")
 
-    m_year_clause = (
-        "" if sel_maint_year == "ทั้งหมด" else f"AND d.year = {sel_maint_year}"
-    )
+    # เงื่อนไข Year
+    m_year_where = "WHERE 1=1"
+    if sel_maint_year != "ทั้งหมด" and sel_maint_year:
+        m_year_where += f" AND d.year = {sel_maint_year}"
 
-    # ดึงเฉพาะเดือนที่มีข้อมูลอยู่จริงตามปีที่เลือก
+    # 2. Select Quarter
     with col_f2:
+        df_maint_quarters = run_query(f"""
+            SELECT DISTINCT d.quarter 
+            FROM fact_maintenance f 
+            JOIN dim_date d ON f.date_key = d.date_key 
+            {m_year_where} AND d.quarter IS NOT NULL 
+            ORDER BY d.quarter ASC
+        """)
+        maint_quarters = (
+            df_maint_quarters["quarter"].astype(str).tolist() if not df_maint_quarters.empty else []
+        )
+        maint_quarters.insert(0, "ทั้งหมด")
+        sel_maint_quarter = st.selectbox("เลือกไตรมาส (Quarter)", maint_quarters, key="m_quarter")
+
+    # เงื่อนไข Quarter สำหรับกรอง Month ถัดไป
+    m_quarter_where = m_year_where
+    if sel_maint_quarter != "ทั้งหมด" and sel_maint_quarter:
+        m_quarter_where += f" AND d.quarter = {sel_maint_quarter}"
+
+    # 3. Select Month
+    with col_f3:
         df_maint_months = run_query(f"""
             SELECT DISTINCT d.month_name, d.month
             FROM fact_maintenance f
             JOIN dim_date d ON f.date_key = d.date_key
-            WHERE 1=1 {m_year_clause}
-            ORDER BY d.month
+            {m_quarter_where}
+            ORDER BY d.month ASC
         """)
         months_list = (
             df_maint_months["month_name"].tolist()
@@ -869,35 +893,53 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
             "เลือกเดือน (Month)", months_list, key="m_month"
         )
 
+    # ---------------------------------------------------------
+    # ประกอบ SQL Clauses
+    # ---------------------------------------------------------
+    m_year_clause = (
+        "" if sel_maint_year == "ทั้งหมด" else f"AND d.year = {sel_maint_year}"
+    )
+    m_quarter_clause = (
+        "" if sel_maint_quarter == "ทั้งหมด" else f"AND d.quarter = {sel_maint_quarter}"
+    )
     m_month_clause = (
-        ""
-        if sel_maint_month == "ทั้งหมด"
-        else f"AND d.month_name = '{sel_maint_month}'"
+        "" if sel_maint_month == "ทั้งหมด" else f"AND d.month_name = '{sel_maint_month}'"
     )
 
-    # KPI Calculation พร้อมการป้องกัน NaN
+    maint_filter_clause = f"{m_year_clause} {m_quarter_clause} {m_month_clause}"
+
+    # ---------------------------------------------------------
+    # KPI Calculation
+    # ---------------------------------------------------------
     maint_cost_res = run_query(f"""
         SELECT COALESCE(SUM(f.total_cost), 0)
         FROM fact_maintenance f
         JOIN dim_date d ON f.date_key = d.date_key
-        WHERE 1=1 {m_year_clause} {m_month_clause}
+        WHERE 1=1 {maint_filter_clause}
     """)
     maint_cost_val = (
         maint_cost_res.iloc[0, 0] if not maint_cost_res.empty else 0
     )
+
+    # ข้อความระบุเงื่อนไขเวลาสำหรับแสดงในการ์ด
+    maint_filter_text = f"ปี {sel_maint_year}"
+    if sel_maint_quarter != "ทั้งหมด":
+        maint_filter_text += f" Q{sel_maint_quarter}"
+    if sel_maint_month != "ทั้งหมด":
+        maint_filter_text += f" ({sel_maint_month})"
 
     m1, m2, m3 = st.columns(3)
     with m1:
         render_kpi_card(
             "ค่าใช้จ่ายการซ่อมบำรุงรวม",
             f"฿{maint_cost_val:,.2f}",
-            "Total Maintenance Cost",
+            maint_filter_text,
             is_risk=True,
         )
     with m2:
         render_kpi_card(
-            "ปีที่เลือก (Selected Year)",
-            str(sel_maint_year),
+            "ไตรมาสที่เลือก (Selected Quarter)",
+            f"Q{sel_maint_quarter}" if sel_maint_quarter != "ทั้งหมด" else "ทั้งหมด",
             "Maintenance Filter",
         )
     with m3:
@@ -916,27 +958,31 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
 
     with col_maint_g1:
         st.markdown(
-            f'<div class="section-header">ค่าใช้จ่ายการซ่อมบำรุงรวมรายเดือน (ปี {sel_maint_year})</div>',
+            f'<div class="section-header">ค่าใช้จ่ายการซ่อมบำรุงรวมรายเดือน ({maint_filter_text})</div>',
             unsafe_allow_html=True,
         )
         df_maint_monthly = run_query(f"""
             SELECT d.month, d.month_name, SUM(f.total_cost) as total_maint_cost
             FROM fact_maintenance f
             JOIN dim_date d ON f.date_key = d.date_key
-            WHERE 1=1 {m_year_clause}
+            WHERE 1=1 {m_year_clause} {m_quarter_clause}
             GROUP BY d.month, d.month_name
-            ORDER BY d.month
+            ORDER BY d.month ASC
         """)
         if not df_maint_monthly.empty:
             fig_m_bar = px.bar(
                 df_maint_monthly,
                 x="month_name",
                 y="total_maint_cost",
-                text_auto=".3s",
+                text_auto="~s",
                 color_discrete_sequence=["#DB1A1A"],
                 labels={"month_name": "เดือน", "total_maint_cost": "ค่าซ่อมบำรุง (฿)"}
             )
-            fig_m_bar.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+            fig_m_bar.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                yaxis=dict(tickprefix="฿", tickformat="~s")
+            )
             st.plotly_chart(fig_m_bar, use_container_width=True)
         else:
             st.info("ไม่พบข้อมูลค่าซ่อมบำรุงรายเดือนตามเงื่อนไขที่เลือก")
@@ -952,7 +998,7 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
             JOIN dim_date d ON f.date_key = d.date_key
             WHERE d.year IS NOT NULL
             GROUP BY d.year
-            ORDER BY d.year
+            ORDER BY d.year ASC
         """)
         if not df_maint_yearly.empty:
             fig_m_line = px.line(
@@ -963,7 +1009,11 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
                 color_discrete_sequence=["#1a1d20"],
                 labels={"year": "ปี", "total_maint_cost": "ค่าซ่อมบำรุงรวม (฿)"}
             )
-            fig_m_line.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+            fig_m_line.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                yaxis=dict(tickprefix="฿", tickformat="~s")
+            )
             st.plotly_chart(fig_m_line, use_container_width=True)
         else:
             st.info("ไม่พบข้อมูลค่าซ่อมบำรุงรายปี")
@@ -971,7 +1021,7 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ---------------------------------------------------------
-    # [เพิ่มเติม] KPI SUMMARY BOXES ก่อนเข้าสู่ส่วน TOP 10
+    # KPI SUMMARY BOXES ก่อนเข้าสู่ส่วน TOP 10
     # ---------------------------------------------------------
     # 1. หาอันดับ 1 รถบรรทุกซ่อมบำรุงสูงสุด
     df_top1_maint = run_query(f"""
@@ -979,19 +1029,19 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
         FROM fact_maintenance f
         JOIN dim_trucks t ON f.truck_key = t.truck_key
         JOIN dim_date d ON f.date_key = d.date_key
-        WHERE 1=1 {m_year_clause} {m_month_clause}
+        WHERE 1=1 {maint_filter_clause}
         GROUP BY t.Truck_ID ORDER BY total_cost DESC LIMIT 1
     """)
     top1_maint_truck = df_top1_maint.iloc[0]["Truck_ID"] if not df_top1_maint.empty else "-"
     top1_maint_val = df_top1_maint.iloc[0]["total_cost"] if not df_top1_maint.empty else 0
 
-    # 2. หาอันดับ 1 รถบรรทุกวิ่งเที่ยวสูงสุด
+    # 2. หาอันดับ 1 รถบรรทุกวิ่งเที่ยวสูงสุด (ใช้ global/maint filter)
     df_top1_truck_trip = run_query(f"""
         SELECT t.Truck_ID, COUNT(f.trip_key) as total_trips
         FROM fact_trips f
         JOIN dim_trucks t ON f.truck_key = t.truck_key
         JOIN dim_date d ON f.date_key = d.date_key
-        WHERE 1=1 {year_clause}
+        WHERE 1=1 {maint_filter_clause}
         GROUP BY t.Truck_ID ORDER BY total_trips DESC LIMIT 1
     """)
     top1_trip_truck = df_top1_truck_trip.iloc[0]["Truck_ID"] if not df_top1_truck_trip.empty else "-"
@@ -1003,7 +1053,7 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
         FROM fact_trips f
         JOIN dim_drivers dr ON f.driver_key = dr.driver_key
         JOIN dim_date d ON f.date_key = d.date_key
-        WHERE 1=1 {year_clause}
+        WHERE 1=1 {maint_filter_clause}
         GROUP BY dr.full_name ORDER BY total_trips DESC LIMIT 1
     """)
     top1_driver_name = df_top1_driver_trip.iloc[0]["full_name"] if not df_top1_driver_trip.empty else "-"
@@ -1045,7 +1095,7 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
         FROM fact_maintenance f
         JOIN dim_trucks t ON f.truck_key = t.truck_key
         JOIN dim_date d ON f.date_key = d.date_key
-        WHERE 1=1 {m_year_clause} {m_month_clause}
+        WHERE 1=1 {maint_filter_clause}
         GROUP BY t.Truck_ID
         ORDER BY total_maint_cost DESC
         LIMIT 10
@@ -1056,7 +1106,7 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
             df_truck_maint,
             x="Truck_ID",
             y="total_maint_cost",
-            text_auto=".3s",
+            text_auto="~s",
             color_discrete_sequence=["#DB1A1A"],
             labels={
                 "total_maint_cost": "ค่าซ่อมบำรุง (฿)",
@@ -1064,7 +1114,9 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
             },
         )
         fig_truck_m.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)"
+            paper_bgcolor="rgba(0,0,0,0)", 
+            plot_bgcolor="rgba(0,0,0,0)",
+            yaxis=dict(tickprefix="฿", tickformat="~s")
         )
         st.plotly_chart(fig_truck_m, use_container_width=True)
     else:
@@ -1083,7 +1135,7 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
             FROM fact_trips f
             JOIN dim_trucks t ON f.truck_key = t.truck_key
             JOIN dim_date d ON f.date_key = d.date_key
-            WHERE 1=1 {year_clause}
+            WHERE 1=1 {maint_filter_clause}
             GROUP BY t.Truck_ID ORDER BY total_trips DESC LIMIT 10
         """)
         fig_truck_t = px.bar(
@@ -1109,7 +1161,7 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
             FROM fact_trips f
             JOIN dim_drivers dr ON f.driver_key = dr.driver_key
             JOIN dim_date d ON f.date_key = d.date_key
-            WHERE 1=1 {year_clause}
+            WHERE 1=1 {maint_filter_clause}
             GROUP BY dr.full_name ORDER BY total_trips DESC LIMIT 10
         """)
         fig_drv = px.bar(
@@ -1131,6 +1183,7 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
         )
         st.plotly_chart(fig_drv, use_container_width=True)
 
+
 # =========================================================
 # PAGE 4 — DELIVERY PERFORMANCE
 # =========================================================
@@ -1140,39 +1193,73 @@ elif menu == "⏱️ ประสิทธิภาพการจัดส่�
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ---------------------------------------------------------
-    # [ข้อ 3] Filter รายปี / รายเดือน สำหรับหน้าประสิทธิภาพการจัดส่ง
+    # Filter รายปี / ไตรมาส / รายเดือน สำหรับหน้าประสิทธิภาพการจัดส่ง
     # ---------------------------------------------------------
     st.markdown(
         '<div class="section-header">🔍 ตัวกรองประสิทธิภาพการจัดส่ง (Delivery Performance Filter)</div>',
         unsafe_allow_html=True,
     )
-    col_del_f1, col_del_f2 = st.columns(2)
+    col_del_f1, col_del_f2, col_del_f3 = st.columns(3)
 
-    df_del_years = run_query("SELECT DISTINCT d.year FROM fact_delivery f JOIN dim_date d ON f.date_key = d.date_key WHERE d.year IS NOT NULL ORDER BY d.year DESC")
-    del_years_list = df_del_years["year"].tolist() if not df_del_years.empty else []
+    # 1.1 เลือกปี
+    df_del_years = run_query(
+        "SELECT DISTINCT d.year FROM fact_delivery f JOIN dim_date d ON f.date_key = d.date_key WHERE d.year IS NOT NULL ORDER BY d.year DESC"
+    )
+    del_years_list = (
+        df_del_years["year"].astype(str).tolist() if not df_del_years.empty else []
+    )
     del_years_list.insert(0, "ทั้งหมด")
 
     with col_del_f1:
         sel_del_year = st.selectbox("เลือกปี (Delivery Year)", del_years_list, key="del_year_filter")
 
-    del_year_sql = "" if sel_del_year == "ทั้งหมด" else f"AND d.year = {sel_del_year}"
+    del_year_where = "WHERE 1=1"
+    if sel_del_year != "ทั้งหมด" and sel_del_year:
+        del_year_where += f" AND d.year = {sel_del_year}"
 
+    # 1.2 เลือกไตรมาส
     with col_del_f2:
+        df_del_quarters = run_query(f"""
+            SELECT DISTINCT d.quarter 
+            FROM fact_delivery f 
+            JOIN dim_date d ON f.date_key = d.date_key 
+            {del_year_where} AND d.quarter IS NOT NULL 
+            ORDER BY d.quarter ASC
+        """)
+        del_quarters_list = (
+            df_del_quarters["quarter"].astype(str).tolist() if not df_del_quarters.empty else []
+        )
+        del_quarters_list.insert(0, "ทั้งหมด")
+        sel_del_quarter = st.selectbox("เลือกไตรมาส (Delivery Quarter)", del_quarters_list, key="del_quarter_filter")
+
+    del_quarter_where = del_year_where
+    if sel_del_quarter != "ทั้งหมด" and sel_del_quarter:
+        del_quarter_where += f" AND d.quarter = {sel_del_quarter}"
+
+    # 1.3 เลือกเดือน
+    with col_del_f3:
         df_del_months = run_query(f"""
             SELECT DISTINCT d.month_name, d.month 
-            FROM fact_delivery f JOIN dim_date d ON f.date_key = d.date_key 
-            WHERE 1=1 {del_year_sql} ORDER BY d.month
+            FROM fact_delivery f 
+            JOIN dim_date d ON f.date_key = d.date_key 
+            {del_quarter_where} 
+            ORDER BY d.month ASC
         """)
         del_months_list = df_del_months["month_name"].tolist() if not df_del_months.empty else []
         del_months_list.insert(0, "ทั้งหมด")
         sel_del_month = st.selectbox("เลือกเดือน (Delivery Month)", del_months_list, key="del_month_filter")
 
+    # SQL Clauses สำหรับ Main Filter
+    del_year_sql = "" if sel_del_year == "ทั้งหมด" else f"AND d.year = {sel_del_year}"
+    del_quarter_sql = "" if sel_del_quarter == "ทั้งหมด" else f"AND d.quarter = {sel_del_quarter}"
     del_month_sql = "" if sel_del_month == "ทั้งหมด" else f"AND d.month_name = '{sel_del_month}'"
-    del_combined_clause = f"{del_year_sql} {del_month_sql}"
+    del_combined_clause = f"{del_year_sql} {del_quarter_sql} {del_month_sql}"
 
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # ---------------------------------------------------------
     # Pie Chart On-Time Ratio ตาม Filter
+    # ---------------------------------------------------------
     st.markdown(
         '<div class="section-header">อัตราการล่าช้าเทียบกับส่งตรงเวลา (On-Time vs Delayed Ratio)</div>',
         unsafe_allow_html=True,
@@ -1213,7 +1300,7 @@ elif menu == "⏱️ ประสิทธิภาพการจัดส่�
     st.markdown("<br>", unsafe_allow_html=True)
     
     # ---------------------------------------------------------
-    # [ข้อ 3] เลือกดู Facilities แบบ "ล่าช้า" หรือ "ตรงเวลา"
+    # เลือกดู Facilities แบบ "ล่าช้า" หรือ "ตรงเวลา"
     # ---------------------------------------------------------
     col1, col2 = st.columns(2)
     with col1:
@@ -1259,9 +1346,8 @@ elif menu == "⏱️ ประสิทธิภาพการจัดส่�
         else:
             st.info("ไม่พบข้อมูลคลังสินค้าตามเงื่อนไข")
 
-    
     # ---------------------------------------------------------
-    # [ข้อ 3] เพิ่มอันดับรถบรรทุกที่มีการจัดส่งล่าช้า/ตรงต่อเวลา พร้อมแสดงชื่ออันดับ 1 ข้างๆ Selectbox
+    # เพิ่มอันดับรถบรรทุกที่มีการจัดส่งล่าช้า/ตรงต่อเวลา พร้อมแสดงชื่ออันดับ 1 ข้างๆ Selectbox
     # ---------------------------------------------------------
     st.markdown(
         '<div class="section-header">🚛 อันดับรถบรรทุกตามประสิทธิภาพการส่งมอบ (Truck Performance Ranking)</div>',
@@ -1328,7 +1414,7 @@ elif menu == "⏱️ ประสิทธิภาพการจัดส่�
             st.info("ไม่พบข้อมูลสถิติรถบรรทุก")
     
     # ---------------------------------------------------------
-    # [ส่วนที่เพิ่มใหม่] KPI Box & Chart เส้นทางการขนส่ง (Route) พร้อม Filter ปี/เดือน
+    # KPI Box & Chart เส้นทางการขนส่ง (Route) พร้อม Filter ปี/ไตรมาส/เดือน
     # ---------------------------------------------------------
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown(
@@ -1336,36 +1422,66 @@ elif menu == "⏱️ ประสิทธิภาพการจัดส่�
         unsafe_allow_html=True,
     )
 
-    # 1. สร้าง Columns สำหรับ Selectbox กรองปีและเดือนเฉพาะส่วน Route
-    col_r_f1, col_r_f2 = st.columns(2)
+    # 1. Selectbox กรองปี ไตรมาส และเดือน เฉพาะส่วน Route
+    col_r_f1, col_r_f2, col_r_f3 = st.columns(3)
 
+    # Route - ปี
     df_route_years = run_query(
         "SELECT DISTINCT d.year FROM fact_delivery f JOIN dim_date d ON f.date_key = d.date_key WHERE d.year IS NOT NULL ORDER BY d.year DESC"
     )
-    route_years_list = df_route_years["year"].tolist() if not df_route_years.empty else []
+    route_years_list = (
+        df_route_years["year"].astype(str).tolist() if not df_route_years.empty else []
+    )
     route_years_list.insert(0, "ทั้งหมด")
 
     with col_r_f1:
         sel_route_year = st.selectbox("เลือกปี (Year)", route_years_list, key="route_year_filter")
 
-    route_year_sql = "" if sel_route_year == "ทั้งหมด" else f"AND d.year = {sel_route_year}"
+    route_year_where = "WHERE 1=1"
+    if sel_route_year != "ทั้งหมด" and sel_route_year:
+        route_year_where += f" AND d.year = {sel_route_year}"
 
+    # Route - ไตรมาส
     with col_r_f2:
+        df_route_quarters = run_query(f"""
+            SELECT DISTINCT d.quarter 
+            FROM fact_delivery f 
+            JOIN dim_date d ON f.date_key = d.date_key 
+            {route_year_where} AND d.quarter IS NOT NULL 
+            ORDER BY d.quarter ASC
+        """)
+        route_quarters_list = (
+            df_route_quarters["quarter"].astype(str).tolist() if not df_route_quarters.empty else []
+        )
+        route_quarters_list.insert(0, "ทั้งหมด")
+        sel_route_quarter = st.selectbox("เลือกไตรมาส (Quarter)", route_quarters_list, key="route_quarter_filter")
+
+    route_quarter_where = route_year_where
+    if sel_route_quarter != "ทั้งหมด" and sel_route_quarter:
+        route_quarter_where += f" AND d.quarter = {sel_route_quarter}"
+
+    # Route - เดือน
+    with col_r_f3:
         df_route_months = run_query(f"""
             SELECT DISTINCT d.month_name, d.month 
-            FROM fact_delivery f JOIN dim_date d ON f.date_key = d.date_key 
-            WHERE 1=1 {route_year_sql} ORDER BY d.month
+            FROM fact_delivery f 
+            JOIN dim_date d ON f.date_key = d.date_key 
+            {route_quarter_where} 
+            ORDER BY d.month ASC
         """)
         route_months_list = df_route_months["month_name"].tolist() if not df_route_months.empty else []
         route_months_list.insert(0, "ทั้งหมด")
         sel_route_month = st.selectbox("เลือกเดือน (Month)", route_months_list, key="route_month_filter")
 
+    # SQL Clauses สำหรับ Route Filter
+    route_year_sql = "" if sel_route_year == "ทั้งหมด" else f"AND d.year = {sel_route_year}"
+    route_quarter_sql = "" if sel_route_quarter == "ทั้งหมด" else f"AND d.quarter = {sel_route_quarter}"
     route_month_sql = "" if sel_route_month == "ทั้งหมด" else f"AND d.month_name = '{sel_route_month}'"
-    route_combined_clause = f"{route_year_sql} {route_month_sql}"
+    route_combined_clause = f"{route_year_sql} {route_quarter_sql} {route_month_sql}"
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # 2. แบ่ง Layout: ฝั่งซ้ายแสดง KPI Card อันดับ 1 / ฝั่งขวาแสดง กราฟ 10 อันดับ
+    # 2. Layout: ฝั่งซ้ายแสดง KPI Card อันดับ 1 / ฝั่งขวาแสดง กราฟ 10 อันดับ
     col_route_kpi, col_route_chart = st.columns([1.2, 2])
 
     with col_route_kpi:
@@ -1418,7 +1534,7 @@ elif menu == "⏱️ ประสิทธิภาพการจัดส่�
                 y="route_name",
                 orientation="h",
                 text_auto=True,
-                color_discrete_sequence=[bar_color] ,
+                color_discrete_sequence=[bar_color],
                 labels={
                     "load_count": "จำนวน Load (รายการ)",
                     "route_name": "เส้นทางการขนส่ง"
@@ -1450,11 +1566,12 @@ elif menu == "⛽ ตัวชี้วัดการใช้น้ำมั�
     }
 
     # ---------------------------------------------------------
-    # FILTER BAR (แสดงเฉพาะปี/เดือนที่มีข้อมูลจริง)
+    # FILTER BAR (แสดงเฉพาะปี/ไตรมาส/เดือนที่มีข้อมูลจริง)
     # ---------------------------------------------------------
-    col_f1, col_f2 = st.columns(2)
+    col_f1, col_f2, col_f3 = st.columns(3)
+    
+    # 1. เลือกปี
     with col_f1:
-        # ดึงเฉพาะปีที่มีข้อมูลใน fact_fuel หรือ fact_safety_incidents
         df_opt_years = run_query("""
             SELECT DISTINCT d.year 
             FROM dim_date d
@@ -1466,26 +1583,43 @@ elif menu == "⛽ ตัวชี้วัดการใช้น้ำมั�
             ORDER BY d.year DESC
         """)
         years_list = ["ทั้งหมด"] + [str(y) for y in df_opt_years["year"].tolist()] if not df_opt_years.empty else ["ทั้งหมด"]
-        sel_year = st.selectbox("📅 เลือกปี (Year)", years_list, key="p5_year_select")
+        sel_year = st.selectbox("เลือกปี (Year)", years_list, key="p5_year_select")
 
+    p5_y_where = f"AND d.year = {sel_year}" if sel_year != "ทั้งหมด" else ""
+
+    # 2. เลือกไตรมาส
     with col_f2:
-        # ดึงเฉพาะเดือนที่มีข้อมูลตามปีที่เลือก
-        year_filter_sql = f"AND d.year = {sel_year}" if sel_year != "ทั้งหมด" else ""
-        df_opt_months = run_query(f"""
-            SELECT DISTINCT d.month 
+        df_opt_quarters = run_query(f"""
+            SELECT DISTINCT d.quarter 
             FROM dim_date d
-            WHERE d.month IS NOT NULL {year_filter_sql}
+            WHERE d.quarter IS NOT NULL {p5_y_where}
               AND (
                   d.date_key IN (SELECT date_key FROM fact_fuel) 
                OR d.date_key IN (SELECT date_key FROM fact_safety_incidents)
               )
-            ORDER BY d.month
+            ORDER BY d.quarter ASC
+        """)
+        quarters_list = ["ทั้งหมด"] + [str(q) for q in df_opt_quarters["quarter"].tolist()] if not df_opt_quarters.empty else ["ทั้งหมด"]
+        sel_quarter = st.selectbox(" เลือกไตรมาส (Quarter)", quarters_list, key="p5_quarter_select")
+
+    p5_q_where = f"{p5_y_where} AND d.quarter = {sel_quarter}" if sel_quarter != "ทั้งหมด" else p5_y_where
+
+    # 3. เลือกเดือน
+    with col_f3:
+        df_opt_months = run_query(f"""
+            SELECT DISTINCT d.month 
+            FROM dim_date d
+            WHERE d.month IS NOT NULL {p5_q_where}
+              AND (
+                  d.date_key IN (SELECT date_key FROM fact_fuel) 
+               OR d.date_key IN (SELECT date_key FROM fact_safety_incidents)
+              )
+            ORDER BY d.month ASC
         """)
         
-        # แสดงชื่อเดือนภาษาไทยใน Selectbox
         months_raw = df_opt_months["month"].tolist() if not df_opt_months.empty else []
         month_options = ["ทั้งหมด"] + [month_dict.get(int(m), str(m)) for m in months_raw]
-        sel_month_name = st.selectbox("📆 เลือกเดือน (Month)", month_options, key="p5_month_select")
+        sel_month_name = st.selectbox(" เลือกเดือน (Month)", month_options, key="p5_month_select")
 
         # แปลงชื่อเดือนกลับเป็นตัวเลขเพื่อใช้ในการ Query SQL
         sel_month_num = None
@@ -1495,9 +1629,11 @@ elif menu == "⛽ ตัวชี้วัดการใช้น้ำมั�
                     sel_month_num = k
                     break
 
-    # สร้าง WHERE Clause จากตัวกรองที่เลือก
+    # สร้าง WHERE Clause สรุปสำหรับนำไปใช้ Query กราฟและ KPI
     p5_y_clause = f"AND d.year = {sel_year}" if sel_year != "ทั้งหมด" else ""
+    p5_q_clause = f"AND d.quarter = {sel_quarter}" if sel_quarter != "ทั้งหมด" else ""
     p5_m_clause = f"AND d.month = {sel_month_num}" if sel_month_num is not None else ""
+    p5_combined_clause = f"{p5_y_clause} {p5_q_clause} {p5_m_clause}"
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -1510,14 +1646,14 @@ elif menu == "⛽ ตัวชี้วัดการใช้น้ำมั�
         FROM fact_fuel f
         JOIN dim_trucks t ON f.truck_key = t.truck_key
         JOIN dim_date d ON f.date_key = d.date_key
-        WHERE 1=1 {p5_y_clause} {p5_m_clause}
+        WHERE 1=1 {p5_combined_clause}
         GROUP BY t.Truck_ID ORDER BY total_fuel_cost DESC LIMIT 1
     """)
     top_truck_id = df_top_fuel_truck.iloc[0]["Truck_ID"] if not df_top_fuel_truck.empty else "N/A"
     top_truck_cost = df_top_fuel_truck.iloc[0]["total_fuel_cost"] if not df_top_fuel_truck.empty else 0
 
     # Total Fuel Cost
-    tot_fuel_res = run_query(f"SELECT COALESCE(SUM(f.total_cost), 0) FROM fact_fuel f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {p5_y_clause} {p5_m_clause}")
+    tot_fuel_res = run_query(f"SELECT COALESCE(SUM(f.total_cost), 0) FROM fact_fuel f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {p5_combined_clause}")
     tot_fuel_val = tot_fuel_res.iloc[0, 0] if not tot_fuel_res.empty else 0
 
     # Top Incident Type
@@ -1525,7 +1661,7 @@ elif menu == "⛽ ตัวชี้วัดการใช้น้ำมั�
         SELECT f.incident_type, COUNT(*) as count
         FROM fact_safety_incidents f
         JOIN dim_date d ON f.date_key = d.date_key
-        WHERE 1=1 {p5_y_clause} {p5_m_clause}
+        WHERE 1=1 {p5_combined_clause}
         GROUP BY f.incident_type ORDER BY count DESC LIMIT 1
     """)
     top_inc_name = df_top_inc_type.iloc[0]["incident_type"] if not df_top_inc_type.empty else "ไม่มีอุบัติเหตุ"
@@ -1537,7 +1673,7 @@ elif menu == "⛽ ตัวชี้วัดการใช้น้ำมั�
         FROM fact_safety_incidents f
         LEFT JOIN dim_drivers dr ON f.driver_key = dr.driver_key
         JOIN dim_date d ON f.date_key = d.date_key
-        WHERE 1=1 {p5_y_clause} {p5_m_clause}
+        WHERE 1=1 {p5_combined_clause}
         GROUP BY dr.driver_id ORDER BY count DESC LIMIT 1
     """)
     top_driver_id = df_top_driver_inc.iloc[0]["driver_id"] if not df_top_driver_inc.empty else "N/A"
@@ -1569,7 +1705,7 @@ elif menu == "⛽ ตัวชี้วัดการใช้น้ำมั�
         FROM fact_fuel f
         JOIN dim_trucks t ON f.truck_key = t.truck_key
         JOIN dim_date d ON f.date_key = d.date_key
-        WHERE 1=1 {p5_y_clause} {p5_m_clause}
+        WHERE 1=1 {p5_combined_clause}
         GROUP BY t.Truck_ID ORDER BY total_fuel_cost DESC LIMIT 10
     """)
 
@@ -1613,7 +1749,7 @@ elif menu == "⛽ ตัวชี้วัดการใช้น้ำมั�
     col_inc1, col_inc2 = st.columns(2)
     with col_inc1:
         st.markdown('<div class="section-header">สัดส่วนประเภทอุบัติเหตุ (Incident Types)</div>', unsafe_allow_html=True)
-        df_inc_type = run_query(f"SELECT f.incident_type, COUNT(*) as count FROM fact_safety_incidents f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {p5_y_clause} {p5_m_clause} GROUP BY f.incident_type ORDER BY count DESC")
+        df_inc_type = run_query(f"SELECT f.incident_type, COUNT(*) as count FROM fact_safety_incidents f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {p5_combined_clause} GROUP BY f.incident_type ORDER BY count DESC")
         if not df_inc_type.empty:
             fig_it = px.pie(df_inc_type, names="incident_type", values="count", hole=0.4, color_discrete_sequence=px.colors.sequential.RdBu)
             fig_it.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
@@ -1623,7 +1759,7 @@ elif menu == "⛽ ตัวชี้วัดการใช้น้ำมั�
 
     with col_inc2:
         st.markdown('<div class="section-header">Top 10 รถบรรทุกที่เกิดอุบัติเหตุบ่อยที่สุด</div>', unsafe_allow_html=True)
-        df_inc_truck_rank = run_query(f"SELECT t.Truck_ID, COUNT(*) as incident_count FROM fact_safety_incidents f JOIN dim_trucks t ON f.truck_key = t.truck_key JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {p5_y_clause} {p5_m_clause} GROUP BY t.Truck_ID ORDER BY incident_count DESC LIMIT 10")
+        df_inc_truck_rank = run_query(f"SELECT t.Truck_ID, COUNT(*) as incident_count FROM fact_safety_incidents f JOIN dim_trucks t ON f.truck_key = t.truck_key JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {p5_combined_clause} GROUP BY t.Truck_ID ORDER BY incident_count DESC LIMIT 10")
         if not df_inc_truck_rank.empty:
             fig_inc_truck = px.bar(df_inc_truck_rank, x="Truck_ID", y="incident_count", text_auto=True, color_discrete_sequence=["#DB1A1A"], labels={"Truck_ID": "รหัสรถบรรทุก", "incident_count": "จำนวนครั้งที่เกิดอุบัติเหตุ"})
             fig_inc_truck.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
@@ -1645,14 +1781,14 @@ elif menu == "⛽ ตัวชี้วัดการใช้น้ำมั�
         FROM fact_safety_incidents f
         JOIN dim_date d ON f.date_key = d.date_key
         LEFT JOIN dim_drivers dr ON f.driver_key = dr.driver_key
-        WHERE 1=1 {p5_y_clause} {p5_m_clause}
+        WHERE 1=1 {p5_combined_clause}
         GROUP BY dr.driver_id
         ORDER BY incident_count DESC
         LIMIT 10
     """)
 
     if not df_driver_inc.empty and df_driver_inc["incident_count"].sum() > 0:
-        # ดึงพาเลตสีโทนแดงส้มตามภาพมาใช้งาน (px.colors.sequential.Reds_r สลับด้านเพื่อเอาสีเข้มขึ้นก่อน และตัดช่วงสีอ่อนมากๆ/สีครีมออก)
+        # ดึงพาเลตสีโทนแดงส้มตามภาพมาใช้งาน
         custom_reds = px.colors.sequential.Reds_r[:6]
         
         fig_driver_inc = px.bar(
