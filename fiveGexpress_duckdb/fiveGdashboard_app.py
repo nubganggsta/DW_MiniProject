@@ -6,7 +6,7 @@ import plotly.io as pio
 import streamlit as st
 
 # =========================================================
-# 1. PAGE CONFIG & PATH SETUP (แก้ไขส่วนนี้)
+# 1. PAGE CONFIG & PATH SETUP
 # =========================================================
 st.set_page_config(
     page_title="5G Express - Data Warehouse Analytics",
@@ -15,25 +15,33 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# กำหนด Base Directory
-BASE_DIR = Path(__file__).resolve().parent
+# กำหนด Base Directory และตำแหน่งปัจจุบัน
+CURRENT_DIR = Path(__file__).resolve().parent
 
-# ระบบค้นหาไฟล์ dev.duckdb อัตโนมัติ (ป้องกันปัญหา Path ซ้ำกัน)
+# รายการตำแหน่งที่อาจเป็นไปได้ทั้งหมดของ dev.duckdb
 candidate_paths = [
-    BASE_DIR / "fiveGexpress_duckdb" / "dev.duckdb",  # แบบมาตรฐาน
-    BASE_DIR / "dev.duckdb",                          # กรณีอยู่โฟลเดอร์นอกสุด
-    BASE_DIR / "fiveGexpress_duckdb",                 # กรณีโฟลเดอร์คือไฟล์ DB
+    CURRENT_DIR / "dev.duckdb",                             # อยู่โฟลเดอร์เดียวกับไฟล์สคริปต์
+    CURRENT_DIR / "fiveGexpress_duckdb" / "dev.duckdb",    # อยู่ในโฟลเดอร์ย่อย fiveGexpress_duckdb
+    CURRENT_DIR.parent / "dev.duckdb",                      # อยู่โฟลเดอร์แม่ (Root)
+    CURRENT_DIR.parent / "fiveGexpress_duckdb" / "dev.duckdb" # อยู่ในโฟลเดอร์แม่ย่อย
 ]
 
+# วนลูปค้นหาไฟล์แรกที่เจอจริงในระบบ
 DB_PATH = None
 for path in candidate_paths:
-    if path.exists():
+    if path.is_file():
         DB_PATH = path
         break
 
-# ถ้ายังหาไม่พบ ให้แจ้งเตือน Path ที่พยายามหาทั้งหมด
+# กรณีไม่พบตาม Path ข้างต้น ให้ค้นหาไฟล์ *.duckdb ทั้งหมดในโปรเจกต์
 if DB_PATH is None:
-    st.error(f"⚠️ ไม่พบไฟล์ฐานข้อมูลในระบบ! พยายามค้นหาจาก: {BASE_DIR}")
+    found_files = list(CURRENT_DIR.glob("**/*.duckdb")) or list(CURRENT_DIR.parent.glob("**/*.duckdb"))
+    if found_files:
+        DB_PATH = found_files[0]
+
+# ถ้ายังไม่พบจริงๆ ให้แจ้งเตือน
+if DB_PATH is None:
+    st.error(f"⚠️ ไม่พบไฟล์ฐานข้อมูล (.duckdb) ในระบบ! ตำแหน่งปัจจุบัน: {CURRENT_DIR}")
     st.stop()
 
 
