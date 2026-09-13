@@ -6,7 +6,7 @@ import plotly.io as pio
 import streamlit as st
 
 # =========================================================
-# 1. PAGE CONFIG & PATH SETUP
+# 1. PAGE CONFIG & PATH SETUP (แก้ไขส่วนนี้)
 # =========================================================
 st.set_page_config(
     page_title="5G Express - Data Warehouse Analytics",
@@ -15,10 +15,40 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# กำหนด Path ไปยังไฟล์ฐานข้อมูลให้แม่นยำ (แก้ปัญหา Table not found บน Streamlit Cloud)
+# กำหนด Base Directory
 BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / "fiveGexpress_duckdb" / "dev.duckdb"
 
+# ระบบค้นหาไฟล์ dev.duckdb อัตโนมัติ (ป้องกันปัญหา Path ซ้ำกัน)
+candidate_paths = [
+    BASE_DIR / "fiveGexpress_duckdb" / "dev.duckdb",  # แบบมาตรฐาน
+    BASE_DIR / "dev.duckdb",                          # กรณีอยู่โฟลเดอร์นอกสุด
+    BASE_DIR / "fiveGexpress_duckdb",                 # กรณีโฟลเดอร์คือไฟล์ DB
+]
+
+DB_PATH = None
+for path in candidate_paths:
+    if path.exists():
+        DB_PATH = path
+        break
+
+# ถ้ายังหาไม่พบ ให้แจ้งเตือน Path ที่พยายามหาทั้งหมด
+if DB_PATH is None:
+    st.error(f"⚠️ ไม่พบไฟล์ฐานข้อมูลในระบบ! พยายามค้นหาจาก: {BASE_DIR}")
+    st.stop()
+
+
+# =========================================================
+# 2. DATABASE CONNECTION
+# =========================================================
+@st.cache_resource
+def get_connection():
+    return duckdb.connect(str(DB_PATH), read_only=True)
+
+try:
+    conn = get_connection()
+except Exception as e:
+    st.error(f"⚠️ ไม่สามารถเชื่อมต่อกับ Data Warehouse ได้: {e}")
+    st.stop()
 # =========================================================
 # CUSTOM SIDEBAR STYLING (RED THEME - FLOATING STYLE)
 # =========================================================
