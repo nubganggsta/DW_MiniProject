@@ -252,7 +252,7 @@ def render_kpi_card(
 
 
 # =========================================================
-# 2. Database Connection & Global Filters
+# 2. Database Connection & Global Sidebar Menu
 # =========================================================
 @st.cache_resource
 def get_connection():
@@ -275,7 +275,7 @@ def run_query(sql_query):
         return pd.DataFrame()
 
 
-# Global Sidebar Filter
+# Global Sidebar Menu (ลบ Global Filter ออกแล้ว)
 with st.sidebar:
     st.title("🚚 5G Express")
     st.caption("Data Warehouse Analytics Console")
@@ -291,46 +291,7 @@ with st.sidebar:
             "⛽ ตัวชี้วัดการใช้น้ำมันและความปลอดภัยในการขนส่ง",
         ],
     )
-
-    st.markdown("---")
-    st.subheader("🔍 ตัวกรองข้อมูลหลัก (Global Filter)")
-
-    # 1. Fetch available years
-    df_years = run_query(
-        "SELECT DISTINCT year FROM dim_date WHERE year IS NOT NULL ORDER BY year DESC"
-    )
-    years_available = (
-        df_years["year"].tolist() if not df_years.empty else [2026]
-    )
-    years_available.insert(0, "ทั้งหมด")
-    selected_year = st.selectbox("เลือกปี (Year)", years_available)
-
-    # เงื่อนไข SQL สำหรับกรอง Year เพื่อใช้ค้นหา Quarter ที่สอดคล้องกัน
-    filter_cond = "WHERE 1=1"
-    if selected_year != "ทั้งหมด":
-        filter_cond += f" AND year = {selected_year}"
-
-    # 2. Fetch available quarters (ตามปีที่เลือก)
-    df_quarters = run_query(
-        f"SELECT DISTINCT quarter FROM dim_date {filter_cond} AND quarter IS NOT NULL ORDER BY quarter ASC"
-    )
-    quarters_available = (
-        df_quarters["quarter"].tolist() if not df_quarters.empty else []
-    )
-    quarters_available.insert(0, "ทั้งหมด")
-    selected_quarter = st.selectbox("เลือกไตรมาส (Quarter)", quarters_available)
-
-    # 3. Clause filters สำหรับนำไปใช้ใน SQL Queries ในหน้าต่างๆ
-    year_clause = (
-        "" if selected_year == "ทั้งหมด" else f"AND d.year = {selected_year}"
-    )
-    quarter_clause = (
-        "" if selected_quarter == "ทั้งหมด" else f"AND d.quarter = {selected_quarter}"
-    )
-
-    # รวม Clause ทั้งหมดสำหรับการนำไป Join/Query (ถ้าจำเป็นต้องใช้คู่กัน)
-    global_time_clause = f"{year_clause} {quarter_clause}"
-
+    
 # =========================================================
 # PAGE 1 — EXECUTIVE OVERVIEW
 # =========================================================
@@ -804,7 +765,7 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
             unsafe_allow_html=True,
         )
         
-        # รองรับการกรองตามปีและไตรมาสสำหรับกราฟแท่งรายเดือน
+        # ดึงข้อมูลแนวโน้มรายได้รายเดือน
         df_monthly_rev = run_query(f"""
             SELECT d.month, d.month_name, SUM(f.revenue) as monthly_revenue
             FROM fact_loads f
@@ -815,18 +776,26 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
         """)
 
         if not df_monthly_rev.empty:
-            fig_m_rev = px.bar(
+            # ปรับเป็น กราฟเส้น (px.line)
+            fig_m_rev = px.line(
                 df_monthly_rev,
                 x="month_name",
                 y="monthly_revenue",
-                text_auto="~s",
+                markers=True,
                 color_discrete_sequence=["#DB1A1A"],
                 labels={"month_name": "เดือน", "monthly_revenue": "รายได้รวม ($)"},
+            )
+            # เพิ่มป้ายแสดงตัวเลขรายได้บนจุดของกราฟเส้น
+            fig_m_rev.update_traces(
+                text=df_monthly_rev["monthly_revenue"],
+                texttemplate="${text:,.2f}",
+                textposition="top center"
             )
             fig_m_rev.update_layout(
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
-                yaxis=dict(tickprefix="$", tickformat="~s")
+                yaxis=dict(tickprefix="$", tickformat="~s"),
+                margin=dict(l=0, r=0, t=30, b=0),
             )
             st.plotly_chart(fig_m_rev, use_container_width=True)
         else:
@@ -911,6 +880,7 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
         st.plotly_chart(fig_top_cust, use_container_width=True)
     else:
         st.info("ไม่พบข้อมูลลูกค้ารายได้สูงสุดตามเงื่อนไขที่เลือก")
+
 
 # =========================================================
 # PAGE 3 — FLEET MANAGEMENT & MAINTENANCE
