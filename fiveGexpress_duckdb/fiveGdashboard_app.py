@@ -339,24 +339,113 @@ if menu == " ภาพรวมการดำเนินงาน (Executive O
     st.caption("สรุปดัชนีชี้วัดผลงานหลัก (KPIs) และแนวโน้มภาพรวมขององค์กร")
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # Dictionary สำหรับแปลงตัวเลขเป็นชื่อเดือนภาษาไทย/อังกฤษ
+    month_dict = {
+        1: "January", 2: "February", 3: "March", 4: "April",
+        5: "May", 6: "June", 7: "July", 8: "August",
+        9: "September", 10: "October", 11: "November", 12: "December"
+    }
+
+    # ---------------------------------------------------------
+    # FILTER BAR (เลือกเฉพาะ ปี/ไตรมาส/เดือน ที่มีข้อมูลจริง)
+    # ---------------------------------------------------------
+    st.markdown(
+        '<div class="section-header">🔍 ตัวกรองข้อมูลภาพรวม (Executive Overview Filter)</div>',
+        unsafe_allow_html=True,
+    )
+    col_p1_f1, col_p1_f2, col_p1_f3 = st.columns(3)
+
+    # 1. เลือกปี (แสดงเฉพาะปีที่มีข้อมูลในตาราง Fact)
+    with col_p1_f1:
+        df_p1_years = run_query("""
+            SELECT DISTINCT d.year 
+            FROM dim_date d 
+            WHERE d.year IS NOT NULL 
+              AND (
+                  d.date_key IN (SELECT date_key FROM fact_loads)
+               OR d.date_key IN (SELECT date_key FROM fact_delivery)
+               OR d.date_key IN (SELECT date_key FROM fact_trips)
+               OR d.date_key IN (SELECT date_key FROM fact_fuel)
+              )
+            ORDER BY d.year DESC
+        """)
+        p1_years_list = ["ทั้งหมด"] + [str(y) for y in df_p1_years["year"].tolist()] if not df_p1_years.empty else ["ทั้งหมด"]
+        sel_p1_year = st.selectbox(" เลือกปี (Year)", p1_years_list, key="p1_year_select")
+
+    p1_y_where = f"AND d.year = {sel_p1_year}" if sel_p1_year != "ทั้งหมด" else ""
+
+    # 2. เลือกไตรมาส (แสดงเฉพาะไตรมาสที่มีข้อมูลจริงตามปีที่เลือก)
+    with col_p1_f2:
+        df_p1_quarters = run_query(f"""
+            SELECT DISTINCT d.quarter 
+            FROM dim_date d 
+            WHERE d.quarter IS NOT NULL {p1_y_where} 
+              AND (
+                  d.date_key IN (SELECT date_key FROM fact_loads)
+               OR d.date_key IN (SELECT date_key FROM fact_delivery)
+               OR d.date_key IN (SELECT date_key FROM fact_trips)
+               OR d.date_key IN (SELECT date_key FROM fact_fuel)
+              )
+            ORDER BY d.quarter ASC
+        """)
+        p1_quarters_list = ["ทั้งหมด"] + [str(q) for q in df_p1_quarters["quarter"].tolist()] if not df_p1_quarters.empty else ["ทั้งหมด"]
+        sel_p1_quarter = st.selectbox("เลือกไตรมาส (Quarter)", p1_quarters_list, key="p1_quarter_select")
+
+    p1_q_where = f"{p1_y_where} AND d.quarter = {sel_p1_quarter}" if sel_p1_quarter != "ทั้งหมด" else p1_y_where
+
+    # 3. เลือกเดือน (แสดงเฉพาะเดือนที่มีข้อมูลจริงตามปีและไตรมาสที่เลือก)
+    with col_p1_f3:
+        df_p1_months = run_query(f"""
+            SELECT DISTINCT d.month 
+            FROM dim_date d 
+            WHERE d.month IS NOT NULL {p1_q_where} 
+              AND (
+                  d.date_key IN (SELECT date_key FROM fact_loads)
+               OR d.date_key IN (SELECT date_key FROM fact_delivery)
+               OR d.date_key IN (SELECT date_key FROM fact_trips)
+               OR d.date_key IN (SELECT date_key FROM fact_fuel)
+              )
+            ORDER BY d.month ASC
+        """)
+        months_raw = df_p1_months["month"].tolist() if not df_p1_months.empty else []
+        p1_month_options = ["ทั้งหมด"] + [month_dict.get(int(m), str(m)) for m in months_raw]
+        sel_p1_month_name = st.selectbox("เลือกเดือน (Month)", p1_month_options, key="p1_month_select")
+
+        sel_p1_month_num = None
+        if sel_p1_month_name != "ทั้งหมด":
+            for k, v in month_dict.items():
+                if v == sel_p1_month_name:
+                    sel_p1_month_num = k
+                    break
+
+    # สร้าง Clause สรุปสำหรับการกรอง KPI และกราฟด้านล่าง
+    p1_y_clause = f"AND d.year = {sel_p1_year}" if sel_p1_year != "ทั้งหมด" else ""
+    p1_q_clause = f"AND d.quarter = {sel_p1_quarter}" if sel_p1_quarter != "ทั้งหมด" else ""
+    p1_m_clause = f"AND d.month = {sel_p1_month_num}" if sel_p1_month_num is not None else ""
+    p1_combined_clause = f"{p1_y_clause} {p1_q_clause} {p1_m_clause}"
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # ---------------------------------------------------------
     # 1. KPI Calculation
+    # ---------------------------------------------------------
     rev_res = run_query(
-        f"SELECT COALESCE(SUM(f.revenue), 0) FROM fact_loads f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {year_clause}"
+        f"SELECT COALESCE(SUM(f.revenue), 0) FROM fact_loads f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {p1_combined_clause}"
     )
     rev_val = rev_res.iloc[0, 0] if not rev_res.empty else 0
 
     del_res = run_query(
-        f"SELECT COUNT(*) FROM fact_delivery f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {year_clause}"
+        f"SELECT COUNT(*) FROM fact_delivery f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {p1_combined_clause}"
     )
     delivery_count = del_res.iloc[0, 0] if not del_res.empty else 0
 
     trip_res = run_query(
-        f"SELECT COUNT(*) FROM fact_trips f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {year_clause}"
+        f"SELECT COUNT(*) FROM fact_trips f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {p1_combined_clause}"
     )
     trip_count = trip_res.iloc[0, 0] if not trip_res.empty else 0
 
     fuel_res = run_query(
-        f"SELECT COALESCE(SUM(f.total_cost), 0) FROM fact_fuel f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {year_clause}"
+        f"SELECT COALESCE(SUM(f.total_cost), 0) FROM fact_fuel f JOIN dim_date d ON f.date_key = d.date_key WHERE 1=1 {p1_combined_clause}"
     )
     fuel_cost = fuel_res.iloc[0, 0] if not fuel_res.empty else 0
 
@@ -386,7 +475,7 @@ if menu == " ภาพรวมการดำเนินงาน (Executive O
     c1, c2, c3, c4 = st.columns(4)
     with c1:
         render_kpi_card(
-            "รายได้รวมทั้งหมด", f"฿{rev_val:,.2f}", growth_label
+            "รายได้รวมทั้งหมด", f"${rev_val:,.2f}", growth_label
         )
     with c2:
         render_kpi_card(
@@ -399,7 +488,7 @@ if menu == " ภาพรวมการดำเนินงาน (Executive O
     with c4:
         render_kpi_card(
             "ค่าใช้จ่ายน้ำมันรวม",
-            f"฿{fuel_cost:,.2f}",
+            f"${fuel_cost:,.2f}",
             "Total Fuel Expense",
             is_risk=True,
         )
@@ -410,7 +499,7 @@ if menu == " ภาพรวมการดำเนินงาน (Executive O
     # 2. Yearly Revenue Growth Trend Line Chart
     # ---------------------------------------------------------
     st.markdown(
-        '<div class="section-header">📈 แนวโน้มรายได้รวมของบริษัทในแต่ละปี (Yearly Revenue Growth Trend)</div>',
+        '<div class="section-header"> แนวโน้มรายได้รวมของบริษัทในแต่ละปี (Yearly Revenue Growth Trend)</div>',
         unsafe_allow_html=True,
     )
 
@@ -429,16 +518,15 @@ if menu == " ภาพรวมการดำเนินงาน (Executive O
             x="year",
             y="total_revenue",
             markers=True,
-            color_discrete_sequence=["#8CC7C4"], # สีเขียวแสดงการเติบโต
+            color_discrete_sequence=["#8CC7C4"],
             labels={
                 "year": "ปี",
-                "total_revenue": "รายได้รวม (฿)",
+                "total_revenue": "รายได้รวม ($)",
             },
         )
-        # แสดงป้ายตัวเลขรายได้บนจุดของกราฟเส้น
         fig_rev_trend.update_traces(
             text=df_yearly_rev["total_revenue"],
-            texttemplate="฿%{text:,.2f}",
+            texttemplate="${text:,.2f}",
             textposition="top center"
         )
         fig_rev_trend.update_layout(
@@ -446,7 +534,7 @@ if menu == " ภาพรวมการดำเนินงาน (Executive O
             plot_bgcolor="rgba(0,0,0,0)",
             margin=dict(l=0, r=0, t=30, b=0),
         )
-        st.plotly_chart(fig_rev_trend, width="stretch")
+        st.plotly_chart(fig_rev_trend, use_container_width=True)
     else:
         st.info("ไม่พบข้อมูลรายได้รายปี")
 
@@ -468,7 +556,7 @@ if menu == " ภาพรวมการดำเนินงาน (Executive O
             SELECT d.month_name, d.month, SUM(f.total_cost) as monthly_fuel_cost
             FROM fact_fuel f
             JOIN dim_date d ON f.date_key = d.date_key
-            WHERE 1=1 {year_clause}
+            WHERE 1=1 {p1_combined_clause}
             GROUP BY d.month_name, d.month
             ORDER BY d.month
         """)
@@ -482,7 +570,7 @@ if menu == " ภาพรวมการดำเนินงาน (Executive O
                 color_discrete_sequence=["#DB1A1A"],
                 labels={
                     "month_name": "เดือน",
-                    "monthly_fuel_cost": "ค่าน้ำมัน (฿)",
+                    "monthly_fuel_cost": "ค่าน้ำมัน ($)",
                 },
             )
             fig_fuel.update_layout(
@@ -490,7 +578,7 @@ if menu == " ภาพรวมการดำเนินงาน (Executive O
                 plot_bgcolor="rgba(0,0,0,0)",
                 margin=dict(l=0, r=0, t=10, b=0),
             )
-            st.plotly_chart(fig_fuel, width="stretch")
+            st.plotly_chart(fig_fuel, use_container_width=True)
         else:
             st.info("ไม่พบข้อมูลค่าใช้จ่ายน้ำมันในช่วงเวลาที่เลือก")
 
@@ -506,7 +594,7 @@ if menu == " ภาพรวมการดำเนินงาน (Executive O
                 COUNT(*) as count
             FROM fact_delivery f
             JOIN dim_date d ON f.date_key = d.date_key
-            WHERE 1=1 {year_clause}
+            WHERE 1=1 {p1_combined_clause}
             GROUP BY f.is_on_time
         """)
 
@@ -530,7 +618,11 @@ if menu == " ภาพรวมการดำเนินงาน (Executive O
                 plot_bgcolor="rgba(0,0,0,0)",
                 margin=dict(l=0, r=0, t=10, b=0),
             )
-            st.plotly_chart(fig_pie, width="stretch")
+            st.plotly_chart(fig_pie, use_container_width=True)
+        else:
+            st.info("ไม่พบข้อมูลสัดส่วนการส่งสินค้าในช่วงเวลาที่เลือก")
+
+
 # =========================================================
 # PAGE 2 — REVENUE ANALYSIS & TOP MONTH BREAKDOWN
 # =========================================================
@@ -729,7 +821,7 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
                 y="monthly_revenue",
                 text_auto="~s",
                 color_discrete_sequence=["#DB1A1A"],
-                labels={"month_name": "เดือน", "monthly_revenue": "รายได้รวม (บาท)"},
+                labels={"month_name": "เดือน", "monthly_revenue": "รายได้รวม ($)"},
             )
             fig_m_rev.update_layout(
                 paper_bgcolor="rgba(0,0,0,0)",
@@ -805,7 +897,7 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
             color_continuous_scale="Reds",
             labels={
                 "customer_name": "ชื่อลูกค้า",
-                "total_revenue": "รายได้รวม (บาท)",
+                "total_revenue": "รายได้รวม ($)",
             },
         )
         fig_top_cust.update_layout(
@@ -976,12 +1068,12 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
                 y="total_maint_cost",
                 text_auto="~s",
                 color_discrete_sequence=["#DB1A1A"],
-                labels={"month_name": "เดือน", "total_maint_cost": "ค่าซ่อมบำรุง (฿)"}
+                labels={"month_name": "เดือน", "total_maint_cost": "ค่าซ่อมบำรุง ($)"}
             )
             fig_m_bar.update_layout(
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
-                yaxis=dict(tickprefix="฿", tickformat="~s")
+                yaxis=dict(tickprefix="$", tickformat="~s")
             )
             st.plotly_chart(fig_m_bar, use_container_width=True)
         else:
@@ -1007,12 +1099,12 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
                 y="total_maint_cost",
                 markers=True,
                 color_discrete_sequence=["#1a1d20"],
-                labels={"year": "ปี", "total_maint_cost": "ค่าซ่อมบำรุงรวม (฿)"}
+                labels={"year": "ปี", "total_maint_cost": "ค่าซ่อมบำรุงรวม ($)"}
             )
             fig_m_line.update_layout(
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
-                yaxis=dict(tickprefix="฿", tickformat="~s")
+                yaxis=dict(tickprefix="$", tickformat="~s")
             )
             st.plotly_chart(fig_m_line, use_container_width=True)
         else:
@@ -1065,7 +1157,7 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
         render_kpi_card(
             "รถที่มีค่าซ่อมบำรุงสูงสุด",
             f"{top1_maint_truck}",
-            f"฿{top1_maint_val:,.2f}",
+            f"${top1_maint_val:,.2f}",
             is_risk=True
         )
     with top_k2:
@@ -1109,14 +1201,14 @@ elif menu == "🚛 การบริหารจัดการกองรถ�
             text_auto="~s",
             color_discrete_sequence=["#DB1A1A"],
             labels={
-                "total_maint_cost": "ค่าซ่อมบำรุง (฿)",
+                "total_maint_cost": "ค่าซ่อมบำรุง ($)",
                 "Truck_ID": "รหัสรถบรรทุก",
             },
         )
         fig_truck_m.update_layout(
             paper_bgcolor="rgba(0,0,0,0)", 
             plot_bgcolor="rgba(0,0,0,0)",
-            yaxis=dict(tickprefix="฿", tickformat="~s")
+            yaxis=dict(tickprefix="$", tickformat="~s")
         )
         st.plotly_chart(fig_truck_m, use_container_width=True)
     else:
@@ -1682,9 +1774,9 @@ elif menu == "⛽ ตัวชี้วัดการใช้น้ำมั�
     # Render KPI Cards (จัดแบ่ง 2 แถว แถวละ 2 Cards)
     col_fkpi1, col_fkpi2 = st.columns(2)
     with col_fkpi1:
-        render_kpi_card("ค่าใช้จ่ายน้ำมันรวม (Total Fuel Cost)", f"฿{tot_fuel_val:,.2f}", "Fuel Expense", is_risk=True)
+        render_kpi_card("ค่าใช้จ่ายน้ำมันรวม (Total Fuel Cost)", f"${tot_fuel_val:,.2f}", "Fuel Expense", is_risk=True)
     with col_fkpi2:
-        render_kpi_card("รถบรรทุกที่มีค่าน้ำมันสูงสุด", f"Truck ID: {top_truck_id}", f"Fuel Cost: ฿{top_truck_cost:,.2f}", is_risk=True)
+        render_kpi_card("รถบรรทุกที่มีค่าน้ำมันสูงสุด", f"Truck ID: {top_truck_id}", f"Fuel Cost: ${top_truck_cost:,.2f}", is_risk=True)
 
     st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
 
@@ -1712,7 +1804,7 @@ elif menu == "⛽ ตัวชี้วัดการใช้น้ำมั�
     if not df_truck_fuel_rank.empty:
         fig_fuel_rank = px.bar(
             df_truck_fuel_rank, x="Truck_ID", y="total_fuel_cost", text_auto=".3s",
-            color_discrete_sequence=["#DB1A1A"], labels={"total_fuel_cost": "ค่าน้ำมัน (฿)", "Truck_ID": "รหัสรถบรรทุก"}
+            color_discrete_sequence=["#DB1A1A"], labels={"total_fuel_cost": "ค่าน้ำมัน ($)", "Truck_ID": "รหัสรถบรรทุก"}
         )
         fig_fuel_rank.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
         st.plotly_chart(fig_fuel_rank, use_container_width=True)
@@ -1729,7 +1821,7 @@ elif menu == "⛽ ตัวชี้วัดการใช้น้ำมั�
         st.markdown('<div class="section-header">ค่าใช้จ่ายน้ำมันเชื้อเพลิงรวมในแต่ละปี</div>', unsafe_allow_html=True)
         df_fuel_y = run_query("SELECT d.year::VARCHAR as year, SUM(f.total_cost) as fuel_cost FROM fact_fuel f JOIN dim_date d ON f.date_key = d.date_key GROUP BY d.year ORDER BY d.year")
         if not df_fuel_y.empty:
-            fig_fy = px.bar(df_fuel_y, x="year", y="fuel_cost", text_auto=".3s", color_discrete_sequence=["#DB1A1A"], labels={"year": "ปี", "fuel_cost": "ค่าน้ำมัน (฿)"})
+            fig_fy = px.bar(df_fuel_y, x="year", y="fuel_cost", text_auto=".3s", color_discrete_sequence=["#DB1A1A"], labels={"year": "ปี", "fuel_cost": "ค่าน้ำมัน ($)"})
             fig_fy.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
             st.plotly_chart(fig_fy, use_container_width=True)
 
