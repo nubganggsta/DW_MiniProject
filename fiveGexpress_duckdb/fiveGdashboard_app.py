@@ -295,7 +295,7 @@ with st.sidebar:
     st.markdown("---")
     st.subheader("🔍 ตัวกรองข้อมูลหลัก (Global Filter)")
 
-    # Fetch available years
+    # 1. Fetch available years
     df_years = run_query(
         "SELECT DISTINCT year FROM dim_date WHERE year IS NOT NULL ORDER BY year DESC"
     )
@@ -305,11 +305,31 @@ with st.sidebar:
     years_available.insert(0, "ทั้งหมด")
     selected_year = st.selectbox("เลือกปี (Year)", years_available)
 
-    # Clause filters
+    # เงื่อนไข SQL สำหรับกรอง Year เพื่อใช้ค้นหา Quarter ที่สอดคล้องกัน
+    filter_cond = "WHERE 1=1"
+    if selected_year != "ทั้งหมด":
+        filter_cond += f" AND year = {selected_year}"
+
+    # 2. Fetch available quarters (ตามปีที่เลือก)
+    df_quarters = run_query(
+        f"SELECT DISTINCT quarter FROM dim_date {filter_cond} AND quarter IS NOT NULL ORDER BY quarter ASC"
+    )
+    quarters_available = (
+        df_quarters["quarter"].tolist() if not df_quarters.empty else []
+    )
+    quarters_available.insert(0, "ทั้งหมด")
+    selected_quarter = st.selectbox("เลือกไตรมาส (Quarter)", quarters_available)
+
+    # 3. Clause filters สำหรับนำไปใช้ใน SQL Queries ในหน้าต่างๆ
     year_clause = (
         "" if selected_year == "ทั้งหมด" else f"AND d.year = {selected_year}"
     )
+    quarter_clause = (
+        "" if selected_quarter == "ทั้งหมด" else f"AND d.quarter = {selected_quarter}"
+    )
 
+    # รวม Clause ทั้งหมดสำหรับการนำไป Join/Query (ถ้าจำเป็นต้องใช้คู่กัน)
+    global_time_clause = f"{year_clause} {quarter_clause}"
 
 # =========================================================
 # PAGE 1 — EXECUTIVE OVERVIEW
@@ -516,20 +536,20 @@ if menu == " ภาพรวมการดำเนินงาน (Executive O
 # =========================================================
 elif menu == "💰 การวิเคราะห์รายได้และพฤติกรรมลูกค้า":
     st.title("🔍 วิเคราะห์เดือนที่สร้างรายได้สูงสุด (Top Revenue Month Breakdown)")
-    st.caption("เจาะลึกข้อมูลรายได้เชิงเปรียบเทียบตามปีและเดือน พร้อมสถิติการจัดส่ง")
+    st.caption("เจาะลึกข้อมูลรายได้เชิงเปรียบเทียบตามปี ไตรมาส และเดือน พร้อมสถิติการจัดส่ง")
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ---------------------------------------------------------
-    # 1. Dynamic Filters (ปี และ เดือน ที่มีข้อมูลจริงใน DB)
+    # 1. Dynamic Filters (ปี, ไตรมาส และ เดือน ที่มีข้อมูลจริงใน DB)
     # ---------------------------------------------------------
     st.markdown(
         '<div class="section-header">🔍 ตัวกรองการวิเคราะห์รายได้ (Revenue Filters)</div>',
         unsafe_allow_html=True,
     )
-    col_p2_1, col_p2_2 = st.columns(2)
+    col_p2_1, col_p2_2, col_p2_3 = st.columns(3)
 
+    # 1.1 เลือกปี (Year)
     with col_p2_1:
-        # ดึงรายชื่อปีจาก fact_loads และ dim_date
         df_rev_years = run_query("""
             SELECT DISTINCT d.year
             FROM fact_loads f
@@ -540,34 +560,52 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
         rev_years_list = (
             df_rev_years["year"].astype(str).tolist() if not df_rev_years.empty else []
         )
-        
-        # เพิ่มตัวเลือก "ทั้งหมด" ไว้หน้าสุด
         rev_years_list.insert(0, "ทั้งหมด")
-        sel_rev_year = st.selectbox("เลือกปี (year)", rev_years_list, key="p2_year_filter")
+        sel_rev_year = st.selectbox("เลือกปี (Year)", rev_years_list, key="p2_year_filter")
 
+    # สร้างเงื่อนไขสำหรับใช้กรอง Quarter และ Month ตามปีที่เลือก
+    year_where_cond = "WHERE 1=1"
+    if sel_rev_year != "ทั้งหมด" and sel_rev_year:
+        year_where_cond += f" AND d.year = {sel_rev_year}"
+
+    # 1.2 เลือกไตรมาส (Quarter)
     with col_p2_2:
-        # ดึงรายชื่อเดือนตามปีที่เลือก
-        if sel_rev_year == "ทั้งหมด" or not sel_rev_year:
-            year_where_clause = ""
-        else:
-            year_where_clause = f"WHERE d.year = {sel_rev_year}"
+        df_rev_quarters = run_query(f"""
+            SELECT DISTINCT d.quarter
+            FROM fact_loads f
+            JOIN dim_date d ON f.date_key = d.date_key
+            {year_where_cond} AND d.quarter IS NOT NULL
+            ORDER BY d.quarter ASC
+        """)
+        rev_quarters_list = (
+            df_rev_quarters["quarter"].astype(str).tolist() if not df_rev_quarters.empty else []
+        )
+        rev_quarters_list.insert(0, "ทั้งหมด")
+        sel_rev_quarter = st.selectbox("เลือกไตรมาส (Quarter)", rev_quarters_list, key="p2_quarter_filter")
 
+    # เพิ่มเงื่อนไข Quarter สำหรับใช้กรอง Month ในกล่องถัดไป
+    quarter_where_cond = year_where_cond
+    if sel_rev_quarter != "ทั้งหมด" and sel_rev_quarter:
+        quarter_where_cond += f" AND d.quarter = {sel_rev_quarter}"
+
+    # 1.3 เลือกเดือน (Month)
+    with col_p2_3:
         df_rev_months = run_query(f"""
             SELECT DISTINCT d.month_name, d.month
             FROM fact_loads f
             JOIN dim_date d ON f.date_key = d.date_key
-            {year_where_clause}
-            ORDER BY d.month
+            {quarter_where_cond}
+            ORDER BY d.month ASC
         """)
         rev_months_list = (
             df_rev_months["month_name"].tolist() if not df_rev_months.empty else []
         )
-
-        # เพิ่มตัวเลือก "ทั้งหมด" ไว้หน้าสุด
         rev_months_list.insert(0, "ทั้งหมด")
-        sel_rev_month = st.selectbox("เลือกเดือน (month)", rev_months_list, key="p2_month_filter")
+        sel_rev_month = st.selectbox("เลือกเดือน (Month)", rev_months_list, key="p2_month_filter")
 
-    # สร้างเงื่อนไข SQL ตามตัวกรองที่เลือก
+    # ---------------------------------------------------------
+    # ประกอบ SQL Clauses สำหรับ Query ข้อมูลในหน้านี้
+    # ---------------------------------------------------------
     if sel_rev_year == "ทั้งหมด":
         p2_year_clause = ""
     elif sel_rev_year:
@@ -575,15 +613,20 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
     else:
         p2_year_clause = "AND 1=0"
 
+    p2_quarter_clause = (
+        "" if sel_rev_quarter == "ทั้งหมด" else f"AND d.quarter = {sel_rev_quarter}"
+    )
+
     p2_month_clause = (
         "" if sel_rev_month == "ทั้งหมด" else f"AND d.month_name = '{sel_rev_month}'"
     )
-    p2_filter_clause = f"{p2_year_clause} {p2_month_clause}"
+
+    p2_filter_clause = f"{p2_year_clause} {p2_quarter_clause} {p2_month_clause}"
 
     # ---------------------------------------------------------
     # 2. Key Performance Indicators (KPIs)
     # ---------------------------------------------------------
-    # 2.1 คำนวณรายได้รวมจาก fact_loads (เหมือนหน้า 1)
+    # 2.1 คำนวณรายได้รวมจาก fact_loads
     rev_res_p2 = run_query(f"""
         SELECT COALESCE(SUM(f.revenue), 0) AS total_revenue
         FROM fact_loads f
@@ -623,12 +666,19 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
         top_cust_name = "-"
         top_cust_sub = "Top Customer Revenue"
 
+    # สร้างสับเทกซ์ระบุช่วงเวลาให้ครอบคลุมถึงไตรมาส
+    time_subtext = f"ปี {sel_rev_year or '-'}"
+    if sel_rev_quarter != "ทั้งหมด":
+        time_subtext += f" Q{sel_rev_quarter}"
+    if sel_rev_month != "ทั้งหมด":
+        time_subtext += f" ({sel_rev_month})"
+
     k1, k2, k3, k4 = st.columns(4)
     with k1:
         render_kpi_card(
             "รายได้รวมตามเงื่อนไข",
             f"${total_rev_p2:,.2f}",
-            f"ปี {sel_rev_year or '-'} ({sel_rev_month})",
+            time_subtext,
         )
     with k2:
         render_kpi_card(
@@ -658,41 +708,41 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
 
     with col_chart1:
         st.markdown(
-            f'<div class="section-header">📊 แนวโน้มรายได้รายเดือน (ปี: {sel_rev_year or "-"})</div>',
+            f'<div class="section-header">📊 แนวโน้มรายได้รายเดือน ({time_subtext})</div>',
             unsafe_allow_html=True,
         )
         
-        # ปรับการสร้างเงื่อนไข SQL สำหรับกราฟแท่งรายเดือนให้รองรับ "ทั้งหมด (All Years)"
+        # รองรับการกรองตามปีและไตรมาสสำหรับกราฟแท่งรายเดือน
         df_monthly_rev = run_query(f"""
             SELECT d.month, d.month_name, SUM(f.revenue) as monthly_revenue
             FROM fact_loads f
             JOIN dim_date d ON f.date_key = d.date_key
-            WHERE 1=1 {p2_year_clause}
+            WHERE 1=1 {p2_year_clause} {p2_quarter_clause}
             GROUP BY d.month, d.month_name
-            ORDER BY d.month
+            ORDER BY d.month ASC
         """)
 
         if not df_monthly_rev.empty:
-            # กราฟแท่งใช้สีแดงสด #DB1A1A
             fig_m_rev = px.bar(
                 df_monthly_rev,
                 x="month_name",
                 y="monthly_revenue",
-                text_auto=",sf",
+                text_auto="~s",
                 color_discrete_sequence=["#DB1A1A"],
-                labels={"month_name": "เดือน", "monthly_revenue": "รายได้รวม ($)"},
+                labels={"month_name": "เดือน", "monthly_revenue": "รายได้รวม (บาท)"},
             )
             fig_m_rev.update_layout(
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
+                yaxis=dict(tickprefix="$", tickformat="~s")
             )
-            st.plotly_chart(fig_m_rev, width="stretch")
+            st.plotly_chart(fig_m_rev, use_container_width=True)
         else:
             st.info("ไม่พบข้อมูลรายได้รายเดือนสำหรับเงื่อนไขที่เลือก")
 
     with col_chart2:
         st.markdown(
-            f'<div class="section-header">🏆 5 อันดับสถานที่/คลังสินค้าที่มีการจัดส่งสูงสุด ({sel_rev_month})</div>',
+            f'<div class="section-header">🏆 5 อันดับสถานที่/คลังสินค้าที่มีการจัดส่งสูงสุด ({time_subtext})</div>',
             unsafe_allow_html=True,
         )
         # สืบค้นสถานที่ส่งจาก dim_facilities และ fact_delivery
@@ -708,7 +758,6 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
         """)
         
         if not df_top_facilities.empty:
-            # กราฟวงกลมใช้โทนสี RdBu
             fig_goods = px.pie(
                 df_top_facilities,
                 names="facility_name",
@@ -720,7 +769,7 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
             )
-            st.plotly_chart(fig_goods, width="stretch")
+            st.plotly_chart(fig_goods, use_container_width=True)
         else:
             st.info("ไม่พบข้อมูลสถานที่จัดส่งตามเงื่อนไขที่เลือก")
 
@@ -746,31 +795,30 @@ elif menu == "💰 การวิเคราะห์รายได้แล�
     """)
 
     if not df_top_customers.empty:
-        # แสดงเป็นกราฟแท่งแนวนอน (Horizontal Bar Chart)
         fig_top_cust = px.bar(
             df_top_customers,
             x="total_revenue",
             y="customer_name",
             orientation="h",
-            text_auto=",.2f",
+            text_auto="~s",
             color="total_revenue",
             color_continuous_scale="Reds",
             labels={
                 "customer_name": "ชื่อลูกค้า",
-                "total_revenue": "รายได้รวม ($)",
+                "total_revenue": "รายได้รวม (บาท)",
             },
         )
         fig_top_cust.update_layout(
             yaxis={"categoryorder": "total ascending"},
+            xaxis=dict(tickprefix="$", tickformat="~s"),
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
             showlegend=False,
             coloraxis_showscale=False,
         )
-        st.plotly_chart(fig_top_cust, width="stretch")
+        st.plotly_chart(fig_top_cust, use_container_width=True)
     else:
         st.info("ไม่พบข้อมูลลูกค้ารายได้สูงสุดตามเงื่อนไขที่เลือก")
-
 
 # =========================================================
 # PAGE 3 — FLEET MANAGEMENT & MAINTENANCE
