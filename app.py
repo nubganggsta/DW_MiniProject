@@ -55,8 +55,7 @@ tables_df = run_query("SELECT table_name FROM information_schema.tables WHERE ta
 all_tables = tables_df['table_name'].tolist() if not tables_df.empty else []
 
 # แสดงเฉพาะ stg_ และ dim_
-# แก้ไขบรรทัดนี้ให้ครอบคลุม stg_, dim_ และ fact_ (รวมถึง fct_)
-tables = [t for t in all_tables if t.startswith("stg_") or t.startswith("dim_") or t.startswith("fact_") or t.startswith("fct_")]
+tables = [t for t in all_tables if t.startswith("stg_") or t.startswith("dim_")]
 
 if not tables:
     st.warning("No tables found in the database. Please make sure the dbt run was successful.")
