@@ -1,18 +1,30 @@
-import streamlit as st
+from pathlib import Path
 import duckdb
 import pandas as pd
 import plotly.express as px
 import plotly.io as pio
+import streamlit as st
+
+# =========================================================
+# 1. PAGE CONFIG & PATH SETUP
+# =========================================================
+st.set_page_config(
+    page_title="5G Express - Data Warehouse Analytics",
+    page_icon="🚚",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+# กำหนด Path ไปยังไฟล์ฐานข้อมูลให้แม่นยำ (แก้ปัญหา Table not found บน Streamlit Cloud)
+BASE_DIR = Path(__file__).resolve().parent
+DB_PATH = BASE_DIR / "fiveGexpress_duckdb" / "dev.duckdb"
 
 # =========================================================
 # CUSTOM SIDEBAR STYLING (RED THEME - FLOATING STYLE)
 # =========================================================
-
 st.markdown(
     """
-
     <style>
-    
     /* 1. ซ่อนพื้นหลังเดิมของ Container หลักใน Sidebar */
     [data-testid="stSidebar"] {
         background-color: transparent !important;
@@ -33,16 +45,14 @@ st.markdown(
        [ส่วนที่แก้ปัญหาข้อความ keyboard_double_...]
        ปรับแต่งปุ่ม Toggle / Collapse Sidebar ให้เป็นกากบาท (✕) หรือลูกศรสวยงาม
        --------------------------------------------------------- */
-    /* ซ่อนข้อความไอคอนเดิมที่เสีย/ล้น */
     [data-testid="stSidebarCollapseButton"] span,
     [data-testid="stSidebarCollapseButton"] i {
         font-size: 0px !important;
         display: none !important;
     }
 
-    /* ใส่ไอคอนใหม่ (กากบาท ✕ หรือ ลูกศร ◀) แทนที่ */
     [data-testid="stSidebarCollapseButton"] button::after {
-        content: "✕"; /* เปลี่ยนเป็น "◀" หรือ "✖" ได้ตามใจชอบ */
+        content: "✕"; 
         font-size: 18px !important;
         font-weight: bold !important;
         color: #FFFFFF !important;
@@ -51,7 +61,6 @@ st.markdown(
         justify-content: center !important;
     }
 
-    /* จัดสไตล์ปุ่มให้ดูละมุนและเป็นวงกลม */
     [data-testid="stSidebarCollapseButton"] button {
         background-color: rgba(255, 255, 255, 0.2) !important;
         border-radius: 50% !important;
@@ -122,6 +131,57 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+
+# =========================================================
+# 2. DATABASE CONNECTION & HELPER FUNCTIONS
+# =========================================================
+@st.cache_resource
+def get_connection():
+    # ตรวจสอบว่ามีไฟล์ dev.duckdb อยู่ในโฟลเดอร์หรือไม่
+    if not DB_PATH.exists():
+        # Fallback กรณีไฟล์อยู่ที่ root directory
+        fallback_path = BASE_DIR / "dev.duckdb"
+        if fallback_path.exists():
+            return duckdb.connect(str(fallback_path), read_only=True)
+        st.error(f"⚠️ ไม่พบไฟล์ฐานข้อมูลที่: {DB_PATH}")
+        st.stop()
+    return duckdb.connect(str(DB_PATH), read_only=True)
+
+
+try:
+    conn = get_connection()
+except Exception as e:
+    st.error(f"⚠️ ไม่สามารถเชื่อมต่อกับ Data Warehouse ได้: {e}")
+    st.stop()
+
+
+def run_query(sql_query):
+    try:
+        return conn.query(sql_query).df()
+    except Exception as err:
+        st.error(f"SQL Query Error: {err}")
+        return pd.DataFrame()
+
+
+# =========================================================
+# 3. GLOBAL SIDEBAR MENU
+# =========================================================
+with st.sidebar:
+    st.title("🚚 5G Express")
+    st.caption("Data Warehouse Analytics Console")
+    st.markdown("---")
+
+    menu = st.radio(
+        "📌 เลือกหมวดหมู่การวิเคราะห์:",
+        [
+            "📊 ภาพรวมการดำเนินงาน (Executive Overview)",
+            "💰 การวิเคราะห์รายได้และพฤติกรรมลูกค้า",
+            "🚛 การบริหารจัดการกองรถและการซ่อมบำรุง",
+            "⏱️ ประสิทธิภาพการจัดส่งและความตรงต่อเวลา",
+            "⛽ ตัวชี้วัดการใช้น้ำมันและความปลอดภัยในการขนส่ง",
+        ],
+    )
 
 # =========================================================
 # 1. Page Config & Custom Styling (Global Design System)
