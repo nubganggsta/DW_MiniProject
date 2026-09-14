@@ -239,7 +239,7 @@ Truck_utilization_metrics - ข้อมูลสรุปตัวเลขก�
 `Injury_flag`: ตัวระบุการบาดเจ็บ (มี/ไม่มี)
 
 ### 4. กลุ่มข้อมูลสรุปตัววัดผล (Aggregated Analytics Data) ตารางคำนวณสรุปรายเดือนเพื่อใช้ทำ KPI แดชบอร์ด และรายงานผู้บริหาร
-`Driver_monthly_metrics` (สรุปผลงานคนขับรายเดือน)
+#### Driver_monthly_metrics (สรุปผลงานคนขับรายเดือน)
 
 `Driver_id + Month`: รหัสพนักงาน และเดือนที่สรุป (Composite Keys)
 
