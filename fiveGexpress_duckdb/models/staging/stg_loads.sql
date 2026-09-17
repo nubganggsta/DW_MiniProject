@@ -1,6 +1,6 @@
 with source as (
 
-    select * from {{ source('northwind', 'loads') }}
+    select * from {{ source('fivegexpress', 'loads') }}
 )
 select
     *,
