@@ -1,0 +1,60 @@
+version: 2
+
+sources:
+  - name: fivegexpress  # ชื่อ source ที่ใช้อ้างอิงใน dbt {{ source('fivegexpress', 'ชื่อตาราง') }}
+    schema: main
+    description: "ข้อมูลดิบระบบการขนส่งและโลจิสติกส์ (Logistics Raw Datasets 14 Tables)"
+    meta:
+      external_location: 'datasets/{name}.csv'
+
+    tables:
+      # =============================================================
+      # 1. กลุ่มข้อมูลหลักและทรัพยากร (Master & Entity Data - 6 ตาราง)
+      # =============================================================
+      - name: customers
+        description: "ข้อมูลลูกค้า/ผู้ว่าจ้าง (Customer Master)"
+
+      - name: facilities
+        description: "ข้อมูลศูนย์กระจายสินค้า/คลังสินค้า (Facility Master)"
+
+      - name: routes
+        description: "ข้อมูลเส้นทางขนส่งมาตรฐาน (Route Master)"
+
+      - name: drivers
+        description: "ข้อมูลพนักงานขับรถ (Driver Master)"
+
+      - name: trucks
+        description: "ข้อมูลรถบรรทุก (Truck Master)"
+
+      - name: trailers
+        description: "ข้อมูลหางลาก/ตู้พ่วง (Trailer Master)"
+
+      # =============================================================
+      # 2. กลุ่มรายการปฏิบัติการและค่าใช้จ่าย (Transactional Data - 6 ตาราง)
+      # =============================================================
+      - name: loads
+        description: "ข้อมูลใบสั่งงาน/ภาระสินค้า (Load Transactions)"
+
+      - name: trips
+        description: "ข้อมูลเที่ยววิ่งจริง (Trip Transactions)"
+
+      - name: delivery_events
+        description: "ข้อมูลสถานะจุดรับ-ส่งสินค้า (Delivery Event Logs)"
+
+      - name: fuel_purchases
+        description: "ประวัติการซื้อ/เติมน้ำมัน (Fuel Purchase Transactions)"
+
+      - name: maintenance_records
+        description: "ประวัติการซ่อมบำรุงรถ (Maintenance Records)"
+
+      - name: safety_incidents
+        description: "บันทึกอุบัติเหตุและความเสี่ยง (Safety Incident Logs)"
+
+      # =============================================================
+      # 3. กลุ่มข้อมูลสรุปตัววัดผล (Aggregated Analytics Data - 2 ตาราง)
+      # =============================================================
+      - name: driver_monthly_metrics
+        description: "ข้อมูลสรุปผลงานพนักงานขับรถรายเดือน (Driver KPIs)"
+
+      - name: truck_utilization_metrics
+        description: "ข้อมูลสรุปการใช้งานรถบรรทุกรายเดือน (Truck Utilization KPIs)"
