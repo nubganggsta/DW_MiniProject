@@ -1,11 +1,12 @@
 with stg_drivers as (
 
-    -- อ่านข้อมูลจาก Staging Model โดยตรง ห้ามอ่านจาก Source
-    select * from {{ ref('stg_drivers') }}
+    -- อ่านข้อมูลจาก Staging Model เท่านั้น ห้ามอ่านจาก Source โดยตรง
+    select * 
+    from {{ ref('stg_drivers') }}
 
 ),
 
-stg_cleaned as (
+cleaned as (
 
     select
         -- Cleansing & Type Casting
@@ -20,13 +21,12 @@ stg_cleaned as (
             else cast(termination_date as date)
         end as cleaned_termination_date,
 
-        trim(cast(license_number as string)) as cleaned_license_number,
         upper(trim(cast(license_state as string))) as cleaned_license_state,
         cast(date_of_birth as date) as cleaned_dob,
         trim(cast(home_terminal as string)) as cleaned_home_terminal,
-        coalesce(trim(cast(employment_status as string)), 'Active') as cleaned_employment_status,
+        trim(cast(employment_status as string)) as cleaned_employment_status,
         upper(trim(cast(cdl_class as string))) as cleaned_cdl_class,
-        coalesce(cast(years_experience as integer), 0) as cleaned_years_experience,
+        cast(years_experience as integer) as cleaned_years_experience,
         ingestion_timestamp
 
     from stg_drivers
@@ -39,37 +39,43 @@ deduplicated as (
 
     select
         *,
-        -- กำจัดข้อมูลซ้ำอ้างอิงตาม driver_id
+        -- Deduplication อ้างอิงตาม Business Key (driver_id)
         row_number() over (
             partition by cleaned_driver_id
             order by cleaned_hire_date desc, ingestion_timestamp desc
         ) as row_num
 
-    from stg_cleaned
+    from cleaned
 
 ),
 
 final as (
 
     select
-        -- สร้าง Surrogate Key ด้วย dbt_utils
-        {{ dbt_utils.generate_surrogate_key(['cleaned_driver_id']) }} as Driver_SK,
-        cleaned_driver_id as Driver_ID,
-        cleaned_first_name as First_Name,
-        cleaned_last_name as Last_Name,
-        cleaned_hire_date as Hire_Date,
-        cleaned_termination_date as Termination_Date,
-        cleaned_license_number as License_Number,
-        cleaned_license_state as License_State,
-        cleaned_dob as Date_Of_Birth,
-        cleaned_home_terminal as Home_Terminal,
-        cleaned_employment_status as Employment_Status,
-        cleaned_cdl_class as CDL_Class,
-        cleaned_years_experience as Years_Experience
+        -- สร้าง Surrogate Key ด้วย dbt built-in macro ตามชื่อใน Diagram (driver_key)
+        {{ dbt.generate_surrogate_key(['cleaned_driver_id']) }} as driver_key,
+        
+        -- Business Key และ Attributes ตาม Diagram + full_name สำหรับ Dashboard
+        cleaned_driver_id as driver_id,
+        cleaned_first_name as first_name,
+        cleaned_last_name as last_name,
+        
+        -- Derived column สำหรับตอบโจทย์ Top 10 Drivers บน BI Tool
+        cleaned_first_name || ' ' || cleaned_last_name as full_name,
+        
+        cleaned_hire_date as hire_date,
+        cleaned_termination_date as termination_date,
+        cleaned_license_state as license_state,
+        cleaned_dob as date_of_birth,
+        cleaned_home_terminal as home_terminal,
+        cleaned_employment_status as employment_status,
+        cleaned_cdl_class as cdl_class,
+        cleaned_years_experience as years_experience
 
     from deduplicated
     where row_num = 1
 
 )
 
-select * from final
+select * 
+from final
