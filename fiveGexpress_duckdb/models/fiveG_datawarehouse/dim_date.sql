@@ -1,49 +1,24 @@
-{{ config(
-    materialized='table'
-) }}
+{{ config(materialized='table') }}
 
-with date_spine as (
-
-    -- ใช้ generate_series สำหรับ DuckDB
-    -- สร้างวันที่ตั้งแต่ 1950-01-01 ถึง 2030-12-31
-    select
-        cast(generate_series as date) as date_day
-    from generate_series(
-        date '1950-01-01',
-        date '2030-12-31',
-        interval '1 day'
-    )
-
+WITH date_spine AS (
+    SELECT d
+    FROM generate_series(DATE '2022-01-01', DATE '2024-12-31', INTERVAL 1 DAY) AS t(d)
 ),
 
-dim_date_calculated as (
-
-    select
-
-        -- Date Key เช่น 19500101, 20260829
-        cast(strftime(date_day, '%Y%m%d') as int) as date_key,
-
-        -- Full Date
-        date_day as full_date,
-
-        -- Day
-        dayofmonth(date_day) as day,
-
-        -- Month
-        month(date_day) as month,
-
-        -- Month Name เช่น January, August
-        strftime(date_day, '%B') as month_name,
-
-        -- Quarter
-        quarter(date_day) as quarter,
-
-        -- Year
-        year(date_day) as year
-
-    from date_spine
-
+transformed AS (
+    SELECT
+        CAST(strftime(d, '%Y%m%d') AS INT) AS date_key,
+        d AS full_date,
+        CAST(date_part('year', d) AS INT) AS year,
+        CAST(date_part('quarter', d) AS INT) AS quarter,
+        CAST(date_part('month', d) AS INT) AS month,
+        monthname(d) AS month_name,
+        dayname(d) AS day_name,
+        CASE
+            WHEN date_part('dow', d) IN (0, 6) THEN TRUE
+            ELSE FALSE
+        END AS weekend
+    FROM date_spine
 )
 
-select *
-from dim_date_calculated
+SELECT * FROM transformed

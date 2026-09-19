@@ -1,13 +1,43 @@
+{{ config(materialized='table', partition_by='incident_date') }}
+
+WITH source AS (
+    SELECT
+        incident_id,
+        CAST(incident_date AS DATE) AS incident_date,
+        incident_type,
+        at_fault_flag,
+        injury_flag,
+        vehicle_damage_cost,
+        cargo_damage_cost,
+        claim_amount,
+        preventable_flag,
+        truck_id,
+        driver_id,
+        current_localtimestamp() AS insertion_timestamp
+    FROM {{ ref('stg_safety_incidents') }}
+),
+
+unique_source AS (
+    SELECT *, ROW_NUMBER() OVER (PARTITION BY incident_id) AS row_num
+    FROM source
+),
+
+cleaned AS (
+    SELECT * EXCLUDE (row_num) FROM unique_source WHERE row_num = 1
+)
+
 SELECT
-    MD5(CAST(incident_id AS VARCHAR)) AS safety_incident_key,
-    incident_id,
-    trip_id AS trip_id_degenerate_key,
-    CAST(STRFTIME(incident_date, '%Y%m%d') AS INT) AS date_key,
-    MD5(CAST(truck_id AS VARCHAR)) AS truck_key,
-    MD5(CAST(driver_id AS VARCHAR)) AS driver_key,
-    incident_type,
+    ROW_NUMBER() OVER (ORDER BY c.incident_id) AS incident_key,
+    CAST(strftime(c.incident_date, '%Y%m%d') AS INT) AS date_key,
+    tr.truck_key,
+    d.driver_key,
+    c.incident_type,
+    c.vehicle_damage_cost,
+    c.cargo_damage_cost,
+    c.claim_amount,
     1 AS incident_count,
-    at_fault_flag AS at_fault,
-    injury_flag AS injury,
-    (COALESCE(vehicle_damage_cost, 0) + COALESCE(cargo_damage_cost, 0) + COALESCE(claim_amount, 0)) AS incident_cost
-FROM {{ ref('stg_safety_incidents') }}
+    c.incident_date,
+    c.insertion_timestamp
+FROM cleaned c
+LEFT JOIN {{ ref('dim_trucks') }} tr ON c.truck_id = tr.truck_id
+LEFT JOIN {{ ref('dim_drivers') }} d ON c.driver_id = d.driver_id
