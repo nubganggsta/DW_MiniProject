@@ -14,6 +14,8 @@ Thitisuda Daengseeda 673020491-6
 
 Phlapapon Kulto 673020626-9
 
+<img width="1942" height="1301" alt="Logistic_DataWarehouse-ER_OLTP" src="/workspaces/DW_MiniProject/readme_images/pipline.jpg"/>
+
 ## 🏗 Architecture & Design Principles
 
 การออกแบบสถาปัตยกรรมข้อมูลในโปรเจกต์นี้ปฏิบัติตามมาตรฐาน **Kimball Data Warehousing Methodology**:
@@ -29,8 +31,8 @@ Phlapapon Kulto 673020626-9
 2. เดือนหรือช่วงเวลาใดสร้างรายได้สูงที่สุด 
 3. ลูกค้ารายใดสร้างรายได้ให้บริษัทมากที่สุด
 4. เส้นทางใดมีปริมาณงานสูงที่สุด
-5. รถบรรทุกคันใดมีประสิทธิภาพการใช้งานสูงสุดที่สุดและต่ำที่สุด เมื่อพิจารณาจากระยะทาง จำนวนเที่ยว และเวลาที่ใช้งาน
-6. คนขับคนใดมีประสิทธิภาพในการทำงานสูงที่สุด เมื่อพิจารณาจากจำนวนเที่ยว ระยะทาง การส่งตรงเวลา และรายได้ที่สร้าง
+5. รถบรรทุกคันใดมีประสิทธิภาพการใช้งานสูงสุดที่สุดและต่ำที่สุด เมื่อพิจารณาจากจำนวนเที่ยว
+6. คนขับคนใดมีประสิทธิภาพในการทำงานสูงที่สุด เมื่อพิจารณาจากจำนวนเที่ยว
 7. ต้นทุนน้ำมันของบริษัทในแต่ละเดือนและแต่ละปีเป็นอย่างไร
 8. รถบรรทุกคันใดมีค่าใช้จ่ายค่าน้ำมันมากที่สุด
 9. รถบรรทุกคันใดมีค่าใช้จ่ายในการซ่อมบำรุงสูงที่สุด
@@ -41,9 +43,8 @@ Phlapapon Kulto 673020626-9
 14. คนขับรถคนใดเกิดอุบัติเหตุบ่อยที่สุด
 15. Safety Incident ประเภทใดเกิดขึ้นบ่อยที่สุด
     
-
 ## Data Model Diagram
-<img width="1942" height="1301" alt="Logistic_DataWarehouse-ER_OLTP" src="https://github.com/user-attachments/assets/fc02de57-2230-4ca9-8df6-9b931b5ad4cd" />
+<img width="1942" height="1301" alt="Logistic_DataWarehouse-ER_OLTP drawio" src="https://github.com/user-attachments/assets/b12ca8d3-da40-4fab-83cb-8ada4ef95b75" />
 
 ### ตารางระบบการทำธุรกรรมขนส่งและโลจิสติกส์ (OLTP)
 Customers - ข้อมูลลูกค้าที่ใช้บริการขนส่งสินค้า
@@ -74,7 +75,7 @@ Driver_monthly_metrics - ข้อมูลสรุปตัววัดผล�
 
 Truck_utilization_metrics - ข้อมูลสรุปตัวเลขการใช้งานและประสิทธิภาพของรถบรรทุกรายเดือน
 ### รายละเอียดชุดข้อมูล 
-ชุดข้อมูล Logistics Operations Database (2022–2024) บน Kaggle เป็นฐานข้อมูลจำลองการทำงานจริงของบริษัทรถบรรทุกขนาดใหญ่ (Class 8) ในสหรัฐฯ ครอบคลุมระยะเวลา 3 ปี รวมกว่า 85,000 ระเบียนใน 14 ตารางที่เชื่อมโยงกัน ออกแบบจากประสบการณ์จริง 12 ปีในสายงานโลจิสติกส์ เพื่อแก้ปัญหาความขาดแคลนชุดข้อมูลที่ซับซ้อนสมจริงโดยไม่ติดปัญหาความลับทางธุรกิจ (NDA)
+ชุดข้อมูล Logistics Operations Database (2022–2024) บน Kaggle เป็นฐานข้อมูลจำลองการทำงานจริงของบริษัทรถบรรทุกขนาดใหญ่ (Class 8) ในสหรัฐฯ ครอบคลุมระยะเวลา 3 ปี รวมกว่า 85,000 records ใน 14 ตารางที่เชื่อมโยงกัน ออกแบบจากประสบการณ์จริง 12 ปีในสายงานโลจิสติกส์ เพื่อแก้ปัญหาความขาดแคลนชุดข้อมูลที่ซับซ้อนสมจริงโดยไม่ติดปัญหาความลับทางธุรกิจ (NDA)
 ### รายละเอียดข้อมูล 14 ตาราง 
 1. กลุ่มข้อมูลหลักและทรัพยากร (Master & Entity Data) เก็บข้อมูลพื้นฐานของทรัพย์สิน บุคลากร ลูกค้า และเส้นทาง เพื่อใช้อ้างอิงในกิจกรรมอื่นๆ
 #### Customers (ข้อมูลลูกค้า/ผู้ว่าจ้าง)
@@ -237,7 +238,7 @@ Truck_utilization_metrics - ข้อมูลสรุปตัวเลขก�
 `Injury_flag`: ตัวระบุการบาดเจ็บ (มี/ไม่มี)
 
 ### 4. กลุ่มข้อมูลสรุปตัววัดผล (Aggregated Analytics Data) ตารางคำนวณสรุปรายเดือนเพื่อใช้ทำ KPI แดชบอร์ด และรายงานผู้บริหาร
-`Driver_monthly_metrics` (สรุปผลงานคนขับรายเดือน)
+#### Driver_monthly_metrics (สรุปผลงานคนขับรายเดือน)
 
 `Driver_id + Month`: รหัสพนักงาน และเดือนที่สรุป (Composite Keys)
 
@@ -361,7 +362,7 @@ Data Lineage Integration: ในขั้นตอนแรกจะไม่ม
 
 - `dim_route`: ดึงข้อมูลจาก `stg_routes` และสร้าง `rouute_key` แบบ MD5 จาก `route_id` และเลือกเก็บข้อมูล `origin_city` , `origin_state`, `destination_city`, `destination_state` รวมถึงเปลี่ยนชื่อ typical_distance_miles เป็น distance , base_rate_per_mile เป็น base_rate, fuel_surcharge_rate เป็น fuel_surcharge และ typical_transit_days เป็น transit_days
 
--  `dim_trucks` : ดึงข้อมูลจก `stg_trucks` และสร้าง `truck_key` แบบ MD5 จาก `truck_id` จากนั้นจัดเก็บรายละเอียดของรถบรรทุก ได้แก่ truck_id, unit_number, make, model_year, VIN, fuel_type, status และ home_terminal  
+-  `dim_trucks` : ดึงข้อมูลจาก `stg_trucks` และสร้าง `truck_key` แบบ MD5 จาก `truck_id` จากนั้นจัดเก็บรายละเอียดของรถบรรทุก ได้แก่ truck_id, unit_number, make, model_year, VIN, fuel_type, status และ home_terminal  
 
 - `fact_delivery`: ดึงข้อมูลจาก `stg_delivery_events` และเชื่อมกับ `stg_trips` เพื่อเพิ่มข้อมูล `driver_id`, `truck_id` และ `dispaatch_date` และเชื่อมกับ `stg_loads` เพื่อเพิ่ม `customer_id` จากนั้นนำข้อมูลไป join กับ `dim_date`, `dim_customers`, `dim_drivers`, `dim_trucks` และ `dim_facilities` เพื่อสร้าง `date_key`, `customer_key`, `driver_key`, `truck_key` และ `facility_key` สำหรับเชื่อมข้อมูล จากนั้นสร้าง `delivery_event_key` ด้วย ROW_NUMBER() และให้ `trip_id` กับ `load_id` เป็น `degenerate key` พร้อมเปลี่ยนชื่อ scheduled_datetime เป็น scheduled_time, actual_datetime เป็น actual_time และ datention_minutes เป็น delay_minutes รวมถึงสร้าง is_on_time และ is_late เพื่อระบุว่าการจัดส่งตรงงเวลาหรือล่าช้า
 
@@ -378,3 +379,4 @@ Data Lineage Integration: ในขั้นตอนแรกจะไม่ม
 - `dim_date`: สร้าง `Date Dimension` ตั้งแต่วันที่ 1950-01-01 ถึง 2030-12-31 โดยใช้ `generate_series` เพื่อสร้างรายการวันที่ต่อเนื่องทุกวัน จากนั้นสร้าง `date_key` ในรูปแบบตัวเลข YYYYMMDD และเก็บข้อมูลวันที่ ได้แก่ วันที่เต็ม (full_date), วันที่ของเดือน (day), เดือน (month), ชื่อเดือน (month_name), ไตรมาส (quarter) และปี (year)
   
 ## Interactive Dashboard
+<img src="./readme_images/Data Infographic.png">
