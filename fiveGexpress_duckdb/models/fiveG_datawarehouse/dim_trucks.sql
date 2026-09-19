@@ -15,7 +15,7 @@ WITH source AS (
         ) AS acquisition_date,
         acquisition_mileage,
         fuel_type,
-        tank_capacity,
+        tank_capacity_gallons,
         status,
         home_terminal,
         current_localtimestamp() AS insertion_timestamp

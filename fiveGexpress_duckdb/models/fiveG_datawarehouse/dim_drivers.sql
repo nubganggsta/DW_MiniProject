@@ -7,24 +7,24 @@ WITH source AS (
         last_name,
         CAST(
             COALESCE(
-                TRY_STRPTIME(hire_date, '%m/%d/%Y %H:%M:%S'),
-                TRY_STRPTIME(hire_date, '%Y-%m-%d'),
-                TRY_STRPTIME(hire_date, '%m/%d/%Y')
+                TRY_STRPTIME(CAST(hire_date AS VARCHAR), '%m/%d/%Y %H:%M:%S'),
+                TRY_STRPTIME(CAST(hire_date AS VARCHAR), '%Y-%m-%d'),
+                TRY_STRPTIME(CAST(hire_date AS VARCHAR), '%m/%d/%Y')
             ) AS DATE
         ) AS hire_date,
         CAST(
             COALESCE(
-                TRY_STRPTIME(termination_date, '%m/%d/%Y %H:%M:%S'),
-                TRY_STRPTIME(termination_date, '%Y-%m-%d'),
-                TRY_STRPTIME(termination_date, '%m/%d/%Y')
+                TRY_STRPTIME(CAST(termination_date AS VARCHAR), '%m/%d/%Y %H:%M:%S'),
+                TRY_STRPTIME(CAST(termination_date AS VARCHAR), '%Y-%m-%d'),
+                TRY_STRPTIME(CAST(termination_date AS VARCHAR), '%m/%d/%Y')
             ) AS DATE
         ) AS termination_date,
         license_state,
         CAST(
             COALESCE(
-                TRY_STRPTIME(date_of_birth, '%m/%d/%Y %H:%M:%S'),
-                TRY_STRPTIME(date_of_birth, '%Y-%m-%d'),
-                TRY_STRPTIME(date_of_birth, '%m/%d/%Y')
+                TRY_STRPTIME(CAST(date_of_birth AS VARCHAR), '%m/%d/%Y %H:%M:%S'),
+                TRY_STRPTIME(CAST(date_of_birth AS VARCHAR), '%Y-%m-%d'),
+                TRY_STRPTIME(CAST(date_of_birth AS VARCHAR), '%m/%d/%Y')
             ) AS DATE
         ) AS date_of_birth,
         home_terminal,
