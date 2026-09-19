@@ -2,9 +2,10 @@
 
 WITH source AS (
     SELECT
-        truck_id,
-        make,
-        model_year,
+        trailer_id,
+        trailer_number,
+        trailer_type,
+        length_feet,
         vin,
         CAST(
             COALESCE(
@@ -13,23 +14,20 @@ WITH source AS (
                 TRY_STRPTIME(CAST(acquisition_date AS VARCHAR), '%m/%d/%Y')
             ) AS DATE
         ) AS acquisition_date,
-        acquisition_mileage,
-        fuel_type,
-        tank_capacity,
         status,
-        home_terminal,
+        current_location,
         current_localtimestamp() AS insertion_timestamp
-    FROM {{ ref('stg_trucks') }}
+    FROM {{ ref('stg_trailers') }}
 ),
 
 unique_source AS (
     SELECT *,
-           ROW_NUMBER() OVER (PARTITION BY truck_id) AS row_num
+           ROW_NUMBER() OVER (PARTITION BY trailer_id) AS row_num
     FROM source
 )
 
 SELECT 
-    ROW_NUMBER() OVER (ORDER BY truck_id) AS truck_key,
+    ROW_NUMBER() OVER (ORDER BY trailer_id) AS trailer_key,
     * EXCLUDE (row_num)
 FROM unique_source
 WHERE row_num = 1
