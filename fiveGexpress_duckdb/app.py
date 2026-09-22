@@ -4,34 +4,42 @@ import streamlit as st
 import duckdb
 import pandas as pd
 
+# BASE_DIR คือโฟลเดอร์ที่ไฟล์ app.py ตั้งอยู่
+BASE_DIR = Path(__file__).resolve().parent
+
+# ตรวจสอบและเลือกพาธของ DB_PATH ให้ถูกต้องโดยอัตโนมัติ
+if (BASE_DIR / "dev.duckdb").exists():
+    DB_PATH = BASE_DIR / "dev.duckdb"
+    DATASETS_DIR = BASE_DIR / "datasets"
+    PROJECT_DIR = BASE_DIR
+else:
+    DB_PATH = BASE_DIR / "fiveGexpress_duckdb" / "dev.duckdb"
+    DATASETS_DIR = BASE_DIR / "fiveGexpress_duckdb" / "datasets"
+    PROJECT_DIR = BASE_DIR / "fiveGexpress_duckdb"
+
+# ย้าย Working Directory ไปยังโฟลเดอร์โปรเจกต์
+if PROJECT_DIR.exists():
+    os.chdir(PROJECT_DIR)
+
 # Page config
 st.set_page_config(
-    page_title="fiveGexpress_Logistic_Tuinuy",
+    page_title="fiveGexpress_Logistic",
     page_icon="🚚💨",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# กำหนด Absolute Path ให้แม่นยำ 100%
-BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / "fiveGexpress_duckdb" / "dev.duckdb"
-DATASETS_DIR = BASE_DIR / "fiveGexpress_duckdb" / "datasets"
-
-@st.cache_resource
-def get_connection():
-    conn = duckdb.connect(str(DB_PATH), read_only=True)
-    # บอกให้ DuckDB รู้ว่าโฟลเดอร์ datasets อยู่ที่ไหน เผื่อกรณี View วิ่งหาไฟล์ดิบ
-    conn.execute(f"SET FILE_SEARCH_PATH = '{DATASETS_DIR.as_posix()}'")
-    return conn
-
 def run_query(query):
-    conn = get_connection()
+    """รันคำสั่ง SQL บน DuckDB ในแบบ Read-Only"""
     try:
-        return conn.execute(query).fetch_df()
+        with duckdb.connect(str(DB_PATH), read_only=True) as conn:
+            conn.execute(f"SET FILE_SEARCH_PATH = '{DATASETS_DIR.as_posix()};{PROJECT_DIR.as_posix()}'")
+            return conn.execute(query).fetch_df()
     except Exception as e:
         st.error(f"Error running query: {e}")
         return pd.DataFrame()
 
+# Custom CSS
 st.markdown("""
     <style>
     .main-title {
@@ -48,9 +56,10 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="main-title"> fiveGexpress Logistic Tuinuy🚚💨(Group 6)</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-title"> fiveGexpress Logistic</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">Inspect and preview raw datasets, staging tables, and dimension views in dev.duckdb</div>', unsafe_allow_html=True)
 
+# ดึงรายชื่อ Table ทั้งหมด
 tables_df = run_query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'main' ORDER BY table_name")
 all_tables = tables_df['table_name'].tolist() if not tables_df.empty else []
 
@@ -68,6 +77,7 @@ else:
 
     stats_df = pd.DataFrame(table_stats)
 
+    # Sidebar Navigation
     st.sidebar.title("🗂️ Table Browser")
     selected_table = st.sidebar.selectbox("Select a table to inspect", tables)
 
@@ -89,7 +99,7 @@ else:
         st.markdown("### Table List & Record Counts")
         st.dataframe(
             stats_df.rename(columns={"table_name": "Table Name", "row_count": "Row Count"}),
-            use_container_width=True,
+            width="stretch",
             hide_index=True
         )
 
@@ -108,7 +118,7 @@ else:
             if not cols_df.empty:
                 st.dataframe(
                     cols_df[['name', 'type']].rename(columns={"name": "Column", "type": "Type"}),
-                    use_container_width=True,
+                    width="stretch",
                     hide_index=True
                 )
             else:
@@ -117,12 +127,13 @@ else:
         with col2:
             st.write("**Data Preview (First 100 rows)**")
             data_df = run_query(f'SELECT * FROM "main"."{selected_table}" LIMIT 100')
-            st.dataframe(data_df, use_container_width=True, hide_index=True)
+            st.dataframe(data_df, width="stretch", hide_index=True)
 
             csv_data = data_df.to_csv(index=False).encode('utf-8')
             st.download_button(
                 label=f"📥 Download `{selected_table}` as CSV",
                 data=csv_data,
                 file_name=f"{selected_table}_preview.csv",
-                mime="text/csv"
+                mime="text/csv",
+                width="stretch"
             )
