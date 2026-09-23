@@ -103,7 +103,7 @@ models:
               to: ref('dim_facilities')
               field: facility_key
 
-  - name: fact_fuel
+  - name: fact_fuel_purchases
     description: "Fact Table บันทึกต้นทุนการเติมน้ำมันและปริมาณแกลลอน"
     columns:
       - name: fuel_key

@@ -42,7 +42,22 @@ unique_source AS (
 )
 
 SELECT 
-    ROW_NUMBER() OVER (ORDER BY driver_id) AS driver_key,
-    * EXCLUDE (row_num)
+    -- สร้าง Surrogate Key ด้วย Hash ให้ตรงตามมาตรฐาน
+    {{ dbt_utils.generate_surrogate_key(['driver_id']) }} AS driver_key,
+    
+    -- *** ต้องแน่ใจว่าระบุ driver_id ออกมาตรงนี้ด้วย ***
+    driver_id,
+    
+    first_name,
+    last_name,
+    hire_date,
+    termination_date,
+    license_state,
+    date_of_birth,
+    home_terminal,
+    employment_status,
+    cdl_class,
+    years_experience,
+    insertion_timestamp
 FROM unique_source
 WHERE row_num = 1
