@@ -281,63 +281,36 @@ Step 4: การวัดผลทางธุรกิจ (Business Intelligen
 
 
 ## ETL Process
-กระบวนการ ETL ในโปรเจกต์นี้ใช้ dbt เป็นหลักในการประมวลผลบน DuckDB เพื่อแปลงข้อมูลดิบจากการขนส่งให้เป็น Data Warehouse รูปแบบ Star Schema โดยแบ่งขั้นตอนอย่างละเอียดดังนี้
-### Step 1: Extract (การสกัดและนำเข้าข้อมูลดิบ)
-Ingestion: ดึงข้อมูลดิบเชิงการดำเนินงาน (Operational Data) จากไฟล์ CSV ต้นทาง เช่น fuel_purchases.csv, drivers.csv, trips.csv เข้าสู่ DuckDB โดยตรงในลักษณะ Raw Tables
+กระบวนการ ETL (Extract, Transform, Load) ในชุดโค้ด SQL ข้างต้น ทำหน้าที่แปลงข้อมูลการขนส่งและโลจิสติกส์ดิบจากระบบต้นทาง (fivegexpress) ให้กลายเป็น Data Warehouse  ในรูปแบบ Star Schema เพื่อรองรับการนำไปทำ Dashboard และวิเคราะห์ข้อมูลเชิงลึก
 
-Data Lineage Integration: ในขั้นตอนแรกจะไม่มีการเปลี่ยนโครงสร้างข้อมูลต้นฉบับ แต่จะเพิ่มคอลัมน์ Metadata สำหรับการติดตามร่องรอยข้อมูล (Audit Columns) เข้าไปใน CTE raw_data:
+Phase 1: Extract (การดึงข้อมูลดิบเข้า Staging Schema)
+ในขั้นตอนแรก ระบบจะทำการคัดลอกข้อมูลดิบแบบ 1:1 จากตารางต้นทางทั้ง 12 ตารางเข้ามาพักไว้ที่ staging schema
+- การสร้าง Ingestion Timestamp: บันทึกเวลาที่ดึงข้อมูลเข้าสู่ระบบด้วย current_localtimestamp() เพื่อใช้อ้างอิงย้อนหลังว่าข้อมูลถูกดึงเข้ามา ณ เวลาใด
+- การแยก Layer (Decoupling): การคัดลอกข้อมูลมาไว้ที่ staging ก่อน ช่วยลดภาระการ Query โดยตรงไปที่ระบบหลัก (Production Database) และป้องกันไม่ให้กระบวนการ Transform ส่งผลกระทบต่อประสิทธิภาพของระบบต้นทาง
+  
+Phase 2: Transform & Load Dimensions (การแปลงและจัดเก็บข้อมูลมิติ)
+ขั้นตอนนี้เป็นการนำข้อมูลจาก staging มาทำความสะอาด ปรับโครงสร้าง และโหลดลงตารางมิติ (Dimension Tables) เพื่อใช้เป็นบริบทในการอธิบายข้อมูล
+- การจัดการรูปแบบวันที่ (Date Standardization):
+   - ข้อมูลวันที่จากระบบต้นทางมักมีรูปแบบที่ไม่แน่นอน (เช่น %m/%d/%Y %H:%M:%S, %Y-%m-%d, หรือ %m/%d/%Y)
+   - โค้ดใช้ TRY_STRPTIME ร่วมกับ COALESCE เพื่อลองแปลงข้อความตามฟอร์แมตต่างๆ จนกว่าจะสำเร็จ แล้วปรับ Type ให้เป็น DATE ที่ถูกต้อง
+- การคัดกรองข้อมูลซ้ำ (Deduplication):
+จัดกลุ่มข้อมูลด้วย ROW_NUMBER() OVER (PARTITION BY <id_column>) และเลือกเฉพาะรายการแรก (WHERE row_num = 1) เพื่อให้มั่นใจว่าข้อมูล Master แต่ละชิ้นมีเพียง Record เดียว
+- การสร้าง Surrogate Keys:
+รันลำดับตัวเลขใหม่ด้วย ROW_NUMBER() OVER (ORDER BY <id_column>) เพื่อสร้าง Primary Key ประจำ Data Warehouse (เช่น truck_key, driver_key, customer_key) ซึ่งช่วยเพิ่มประสิทธิภาพการ Join และทำ Indexing
+- การสร้าง ตารางมิติเวลา (dim_date):
+ใช้ generate_series สร้างลำดับวันที่ต่อเนื่องตั้งแต่วันที่ 1 ม.ค. 2022 ถึง 31 ธ.ค. 2024
+คำนวณ Attribute ทางเวลาเพิ่ม เช่น ปี, ไตรมาส, เดือน, ชื่อวัน, และสถานะวันหยุดเสาร์-อาทิตย์ (weekend) พร้อมสร้าง date_key ในรูปแบบตัวเลข (YYYYMMDD)
 
-- stg_loads_at: บันทึกเวลาที่นำข้อมูลเข้าด้วย CURRENT_TIMESTAMP
-  
-- source_filename: บันทึกชื่อไฟล์ต้นทาง
-  
-- batch_id: บันทึกรหัสรอบของการประมวลผลข้อมูล (เช่น BATCH_2026)
-  
-### Step 2: Transform - (Staging Layer: stg_)
-การประมวลผลใน Staging Layer เน้นการทำความสะอาดข้อมูลแบบ 1 ต่อ 1 ก่อนนำไปใช้งานต่อ ผ่าน 3 กระบวนการย่อย:
+Phase 3: Transform & Load Facts (การแปลงและจัดเก็บข้อมูลข้อเท็จจริง)
+ขั้นตอนนี้เป็นการนำข้อมูลธุรกรรม (Transactions) หรือเหตุการณ์ที่เกิดขึ้นจริงในธุรกิจ มาเชื่อมโยงกับตารางมิติ แล้วบันทึกลงตารางข้อเท็จจริง (Fact Tables)
+- การรวมข้อมูลจากหลายแหล่ง (Data Consolidation):
+ในตาราง fact_trips_operations มีการนำข้อมูลการวิ่งรถ (stg_trips), รายละเอียดสินค้า (stg_loads), และสถานะการส่งมอบ (stg_delivery_events) มาประกอบรวมกันเป็น Record เดียวกัน
+- การเชื่อมโยงมิติ (Dimension Lookup via JOIN):
+ทำการ LEFT JOIN ตารางมิติที่สร้างไว้ใน Phase 2 (dim_trucks, dim_drivers, dim_customers ฯลฯ) โดยเปลี่ยนจากการใช้ Business Key เดิม (เช่น truck_id) มาเก็บเป็น Surrogate Key (truck_key) แทน
+- การจัดเตรียมตัววัดทางธุรกิจ (Business Metrics & Keys):
+   - คำนวณคอร์สและตัวเลขทางสถิติ เช่น รายได้ (revenue), ค่าใช้จ่ายน้ำมัน (fuel_cost), ระยะทาง (actual_distance_miles), และค่าปรับการจอดรอ (detention_minutes)
+   - แปลงวันที่เกิดเหตุการณ์ให้เป็น date_key เพื่อเชื่อมเข้ากับ dim_date สำหรับการวิเคราะห์ตามช่วงเวลา
 
-- Text Standardization: ตัดช่องว่างด้วย TRIM() และปรับตัวอักษรเป็นพิมพ์ใหญ่ด้วย UPPER() บนคอลัมน์ที่เป็น Business Keys เช่น driver_id, truck_id, trip_id เพื่อป้องกันปัญหาคีย์ไม่จับคู่กันเนื่องจากเว้นวรรคหรือตัวพิมพ์ต่างกัน
-  
-- Safe Type Casting & Null Handling:
-  
-  ใช้ TRY_CAST() แปลง Data Type อย่างปลอดภัย เช่น แปลงวันที่ด้วย TRY_CAST(purchase_date AS DATE) หากมีข้อมูลผิดปกติระบบจะคืนค่าเป็น NULL แทนการรันล้มเหลว
-
-  ใช้ NULLIF(..., '') แปลงข้อความว่างเปล่าให้เป็น NULL
-
-  ใช้ COALESCE() ใส่ค่า Default เพื่อป้องกันค่าว่าง เช่น หากไม่มีชื่อเมืองให้ใส่ 'Unknown', ไม่มีรัฐให้ใส่ 'N/A' และใส่ 0.0 สำหรับคอลัมน์ตัวเลขเชิงคำนวณ (gallons, total_cost)
-
-- Key Validation & Deduplication:
-กรองเรคคอร์ดที่ขาด Primary Key ออกด้วย WHERE fuel_purchase_id IS NOT NULL
-จัดการข้อมูลซ้ำโดยใช้ Window Function ROW_NUMBER() OVER (PARTITION BY fuel_purchase_id ORDER BY stg_loaded_at) แล้วเลือกเฉพาะรายการแรกสุดที่เข้าสู่ระบบ (WHERE dup_rank = 1)
-
-### Step 3: Transform - (Core DW Layer: dim_ / fct_)
-เป็นการแปลงข้อมูลจาก Staging Layer ให้เป็นโครงสร้างมิติวิเคราะห์ (Star Schema) ในระดับ Core Data Warehouse:
-- Surrogate Key Hashing: แปลง Business Key ให้กลายเป็น Primary Key ประจำตารางมิติด้วยฟังก์ชัน Hash เช่น MD5(CAST(driver_id AS STRING)) ได้เป็น driver_key เพื่อป้องกันปัญหาคีย์เปลี่ยนแปลงจากระบบต้นทาง
-  
-- Business Logic & Metric Derivation:
-  
-  การสร้าง Attributes: รวมชื่อ-นามสกุลด้วย CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, ''))
-  
-  การสร้าง Flag: สร้างคอลัมน์ is_active (true/false) ด้วย CASE WHEN ตรวจสอบสถานะการทำงาน
-  
-  การคำนวณระยะเวลา: คำนวณอายุงาน tenure_years และอายุคนขับ age ด้วยฟังก์ชัน datediff('day', ...) หารด้วย 365.25
-  
-- Star Schema Separation:
-  
-  Dimension Tables (dim_): จัดเก็บข้อมูลบริบท เช่น dim_drivers, dim_truck, dim_route, dim_date
-  
-  Fact Tables (fct_): จัดเก็บธุรกรรมเชิงตัวเลข เช่น fct_fuel, fct_load, fct_delivery โดยดึง Surrogate Key จาก Dimension มาวางเป็น Foreign Key
-กำหนด materialized='table' ใน config ของ dbt เพื่อให้สร้างเป็น Physical Table บน DuckDB ช่วยให้การ JOIN ข้อมูลประมวลผลได้รวดเร็ว
-### Step 4: Load & Quality Assurance (การบันทึกและการตรวจสอบคุณภาพ)
-- Data Quality Testing: ควบคุมมาตรฐานข้อมูลก่อนนำไปใช้งานผ่านไฟล์ schema.yml และรันคำสั่ง dbt test เพื่อตรวจสอบ 3 เงื่อนไขหลัก:
-  
-- not_null: ตรวจสอบว่า Surrogate Key และ Foreign Key ห้ามเป็นค่าว่าง
-  
-- unique: ตรวจสอบว่า Primary Key ในทุกตารางมิติไม่ซ้ำกัน
-  
-- relationships: ตรวจสอบความสมบูรณ์ของ Foreign Key ระหว่าง Fact และ Dimension Tables (Referential Integrity)
-  
-- Serving Data: บันทึกผลลัพธ์ลงในไฟล์ fiveGexpress_duckdb เพื่อรอรับการยิง SQL Query ตรงไปยังตาราง dim_ และ fct_ ผ่านแอปพลิเคชัน Python Streamlit (fiveGdashboard_app.py)
 
 ## Data Cube Diagram
 <img src="./readme_images/Fact_Delivery.png">
