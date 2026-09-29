@@ -475,13 +475,111 @@ def render_top_filters(page_prefix: str, show_facility: bool = False):
     return selected_year, trend_axis, selected_facility, WHERE_SQL, time_expr, group_expr
 
 # ==========================================
-# 3. Glassmorphism Sidebar: Navigation Only
+# 1. Custom CSS: Floating Red Sidebar & Sleek Menu
+# ==========================================
+custom_css = """
+<style>
+    /* ซ่อนเมนูพื้นฐานของ Streamlit */
+    #MainMenu { visibility: hidden; }
+    footer { visibility: hidden; }
+    header { visibility: hidden; }
+
+    /* --- 1. ปรับ Sidebar ให้เป็น Floating และใช้สีแดง --- */
+    /* ยกเลิก Glassmorphism เดิม และบังคับใช้สีแดง #DB1A1A */
+    section[data-testid="stSidebar"] {
+        background: #DB1A1A !important;
+        box-shadow: 5px 0 20px rgba(0, 0, 0, 0.3) !important;
+        border-right: none !important;
+    }
+    
+    /* บังคับให้ตัวหนังสือและไอคอนใน Sidebar เป็นสีขาวทั้งหมด */
+    section[data-testid="stSidebar"] * {
+        color: #FFFFFF !important;
+    }
+
+    /* --- 2. เปลี่ยนปุ่ม Toggle (☰ เปิด / ✕ ปิด) --- */
+    /* ซ่อนไอคอน SVG ลูกศรเดิมของ Streamlit */
+    button[data-testid="collapsedControl"] svg,
+    button[data-testid="stSidebarCollapseButton"] svg {
+        display: none !important;
+    }
+    
+    /* สร้างไอคอน ☰ (เปิด Sidebar) */
+    button[data-testid="collapsedControl"]::after {
+        content: "☰";
+        font-size: 26px;
+        color: #DB1A1A !important; /* สีปุ่มตอนปิด ให้กลืนกับพื้นหลังเว็บ */
+        font-weight: bold;
+        display: block;
+    }
+    
+    /* สร้างไอคอน ✕ (ปิด Sidebar) */
+    button[data-testid="stSidebarCollapseButton"]::after {
+        content: "✕";
+        font-size: 20px;
+        color: #FFFFFF !important;
+        font-weight: bold;
+        display: block;
+    }
+
+    /* --- 3. ปรับแต่ง Radio Button ให้เป็นปุ่มเมนูเรียบหรู --- */
+    /* ซ่อนปุ่มวงกลม (Radio Circle) ใน Streamlit รุ่นใหม่ */
+    [data-testid="stSidebar"] div[role="radiogroup"] label div:first-of-type {
+        display: none !important;
+    }
+    
+    /* จัดทรงปุ่มเมนู (Padding, Background) */
+    [data-testid="stSidebar"] div[role="radiogroup"] label {
+        padding: 12px 15px !important;
+        border-radius: 8px !important;
+        margin-bottom: 8px !important;
+        background-color: rgba(255, 255, 255, 0.1) !important; /* พื้นหลังขาวโปร่งแสง */
+        transition: all 0.3s ease !important;
+        cursor: pointer !important;
+        width: 100% !important;
+    }
+    
+    /* เอฟเฟกต์ตอนนำเมาส์ไปชี้ (Hover) */
+    [data-testid="stSidebar"] div[role="radiogroup"] label:hover {
+        background-color: rgba(255, 255, 255, 0.25) !important;
+        transform: translateX(5px);
+    }
+    
+    /* ไฮไลท์เมื่อเมนูถูกเลือก (Active State) */
+    [data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
+        background-color: rgba(255, 255, 255, 0.35) !important;
+        border-left: 5px solid #FFFFFF !important;
+        border-radius: 4px 8px 8px 4px !important;
+        font-weight: bold !important;
+    }
+
+    /* ตกแต่ง Brand Box */
+    .sidebar-brand-box {
+        padding: 10px 0 25px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        margin-bottom: 20px;
+    }
+    .sidebar-brand-title {
+        font-size: 20px;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+    }
+    .sidebar-tag {
+        font-size: 13px;
+        color: #FFD2D2 !important; /* สีชมพูอ่อนให้อ่านง่ายบนพื้นแดง */
+    }
+</style>
+"""
+st.markdown(custom_css, unsafe_allow_html=True)
+
+# ==========================================
+# 3. Floating Sidebar: Navigation Only
 # ==========================================
 with st.sidebar:
     st.markdown(
         """
         <div class="sidebar-brand-box">
-            <div class="sidebar-brand-title">🚛 5G Express Console</div>
+            <div class="sidebar-brand-title">❖ 5G Express Console</div>
             <span class="sidebar-tag">● ระบบเชื่อมต่อเรียบร้อย</span>
         </div>
         """,
@@ -489,19 +587,21 @@ with st.sidebar:
     )
 
     page = st.radio(
-        "หมวดหมู่การวิเคราะห์:",
+        "NAVIGATION",
         [
-            "📊 ภาพรวมรายได้และลูกค้า",
-            "🚚 การจัดส่งและประสิทธิภาพ",
-            "🛠️ การซ่อมบำรุงยานพาหนะ",
-            "⛽ เชื้อเพลิงและความปลอดภัย"
+            "◧ ภาพรวมรายได้และลูกค้า",
+            "⚲ การจัดส่งและประสิทธิภาพ",
+            "⚙ การซ่อมบำรุงยานพาหนะ",
+            "⛨ เชื้อเพลิงและความปลอดภัย"
         ],
-        index=0
+        index=0,
+        label_visibility="collapsed"
     )
 
-    st.markdown("---")
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown("<hr style='border-color: rgba(255,255,255,0.3);'>", unsafe_allow_html=True)
     st.caption("คลังข้อมูลโลจิสติกส์ v3.0 • DuckDB Analytics Engine")
-
+    
 # Banner Header
 st.markdown(
     """
