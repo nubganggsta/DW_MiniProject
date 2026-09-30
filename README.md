@@ -41,6 +41,8 @@ for do midterm project
     
 ## Data Model Diagram
 
+<img width="1942" height="1301" alt="Logistic_DataWarehouse-ER_OLTP drawio" src="https://github.com/user-attachments/assets/2a99d5b0-e90f-4a78-a5cd-2346b675bfca" />
+
 ### ตารางระบบการทำธุรกรรมขนส่งและโลจิสติกส์ (OLTP)
 Customers - ข้อมูลลูกค้าที่ใช้บริการขนส่งสินค้า
 
