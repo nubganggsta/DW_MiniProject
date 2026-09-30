@@ -11,7 +11,7 @@ for do midterm project
 | Thitisuda Daengseeda | 673020491-6 | • จัดทำเอกสารประกอบการนำเสนอ<br>• Web Application (`app.py`)<br>• Staging / Dimension / Fact  |
 | Phlapapon Kulto | 673020626-9 | • ออกแบบและจัดทำ ER Diagram<br>• ทำเอกสารอธิบายกระบวนการ ETL ใน README<br>• Staging / Dimension / Fact |
 
-## Link Dashboard : https://dwminiproject-f4earrdddhz6ssfmng7u7e.streamlit.app/
+## Link Dashboard : [https://dwminiproject-f4earrdddhz6ssfmng7u7e.streamlit.app/](https://dwminiproject-f4earrdddhz6ssfmng7u7e.streamlit.app/)
 ## 🏗 Architecture & Design Principles
 
 การออกแบบสถาปัตยกรรมข้อมูลในโปรเจกต์นี้ปฏิบัติตามมาตรฐาน **Kimball Data Warehousing Methodology**:
