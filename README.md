@@ -12,6 +12,8 @@ for do midterm project
 | Phlapapon Kulto | 673020626-9 | • ออกแบบและจัดทำ ER Diagram<br>• ทำเอกสารอธิบายกระบวนการ ETL ใน README<br>• Staging / Dimension / Fact |
 
 ## Link Dashboard : [[https://dwminiproject-f4earrdddhz6ssfmng7u7e.streamlit.app/](https://dwminiproject-f4earrdddhz6ssfmng7u7e.streamlit.app/)](https://dwminiproject-f4earrdddhz6ssfmng7u7e.streamlit.app/)
+
+## Link Presentation : https://canva.link/03c7krn6935ad32
 ## 🏗 Architecture & Design Principles
 
 การออกแบบสถาปัตยกรรมข้อมูลในโปรเจกต์นี้ปฏิบัติตามมาตรฐาน **Kimball Data Warehousing Methodology**:
