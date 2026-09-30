@@ -56,12 +56,16 @@ st.markdown(
     #MainMenu {{ visibility: hidden; }}
     footer {{ visibility: hidden; }}
     
-    /* Keep Header transparent so sidebar toggle button is visible */
+    /* Header โปร่งใส */
     header[data-testid="stHeader"] {{
         background: transparent !important;
     }}
-    header [data-testid="stToolbar"] {{
-        visibility: hidden !important;
+    /* ซ่อนเฉพาะเมนู/ปุ่ม Deploy ห้ามซ่อม stToolbar ทั้งก้อน เพราะปุ่มเปิด sidebar อยู่ข้างใน */
+    [data-testid="stMainMenu"],
+    [data-testid="stAppDeployButton"],
+    [data-testid="stDeployButton"],
+    .stDeployButton {{
+        display: none !important;
     }}
     header [data-testid="stDecoration"] {{
         display: none !important;
@@ -75,7 +79,6 @@ st.markdown(
         border-right: none !important;
         z-index: 100 !important;
     }}
-
     /* Sidebar Default Text Color */
     section[data-testid="stSidebar"] p,
     section[data-testid="stSidebar"] span,
@@ -84,66 +87,22 @@ st.markdown(
         color: #FFFFFF;
     }}
 
-    /* Sidebar Close Button (when sidebar is open): shows X */
-    button[data-testid="stSidebarCollapseButton"],
-    button[data-testid="stSidebarToggle"],
-    [data-testid="stSidebarHeader"] button {{
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        cursor: pointer !important;
-    }}
-
-    button[data-testid="stSidebarCollapseButton"] svg,
-    button[data-testid="stSidebarToggle"] svg,
-    [data-testid="stSidebarHeader"] button svg {{
-        display: none !important;
-    }}
-
-    button[data-testid="stSidebarCollapseButton"]::after,
-    button[data-testid="stSidebarToggle"]::after,
-    [data-testid="stSidebarHeader"] button::after {{
-        content: "✕" !important;
-        font-size: 20px !important;
-        color: #FFFFFF !important;
-        font-weight: bold !important;
-        display: block !important;
-        line-height: 1 !important;
-    }}
-
-    /* Sidebar Open Button (when sidebar is closed): always visible */
-    button[data-testid="collapsedControl"],
-    button[data-testid="stSidebarCollapsedControl"],
-    [data-testid="stHeader"] button[data-testid="collapsedControl"] {{
+    /* ปุ่มเปิด Sidebar (ตอน sidebar ถูกปิด): ให้เห็นและกดได้เสมอ ทุกเวอร์ชันของ Streamlit */
+    [data-testid="stExpandSidebarButton"],
+    [data-testid="stSidebarCollapsedControl"],
+    [data-testid="collapsedControl"] {{
         visibility: visible !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
         z-index: 1000001 !important;
         background-color: #FFFFFF !important;
-        border: 2px solid #DB1A1A !important;
         border-radius: 8px !important;
         box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
-        width: 38px !important;
-        height: 38px !important;
-        cursor: pointer !important;
-        margin-left: 10px !important;
-        margin-top: 10px !important;
     }}
-
-    button[data-testid="collapsedControl"] svg,
-    button[data-testid="stSidebarCollapsedControl"] svg {{
-        display: none !important;
-    }}
-
-    button[data-testid="collapsedControl"]::after,
-    button[data-testid="stSidebarCollapsedControl"]::after {{
-        content: "☰" !important;
-        font-size: 20px !important;
+    [data-testid="stExpandSidebarButton"] *,
+    [data-testid="stSidebarCollapsedControl"] *,
+    [data-testid="collapsedControl"] * {{
+        visibility: visible !important;
         color: #DB1A1A !important;
-        font-weight: bold !important;
-        display: block !important;
-        line-height: 1 !important;
+        fill: #DB1A1A !important;
     }}
 
     /* Navigation Radio Buttons */
