@@ -40,7 +40,6 @@ for do midterm project
 15. Safety Incident ประเภทใดเกิดขึ้นบ่อยที่สุด
     
 ## Data Model Diagram
-<img width="1942" height="1301" alt="Logistic_DataWarehouse-ER_OLTP drawio" src="schema_drawio.png" />
 
 ### ตารางระบบการทำธุรกรรมขนส่งและโลจิสติกส์ (OLTP)
 Customers - ข้อมูลลูกค้าที่ใช้บริการขนส่งสินค้า
@@ -309,17 +308,8 @@ Phase 3: Transform & Load Facts (การแปลงและจัดเก�
 
 
 ## Data Cube Diagram
-<img src="./readme_images/Fact_Delivery.png">
-    
-<img src="./readme_images/Fact_Fuel.png">
 
-<img src="./readme_images/Fact_Load.png">
-
-<img src="./readme_images/Fact_Maintenance.png">
-
-<img src="./readme_images/Fact_Safety_Incident.png">
-
-<img src="./readme_images/Fact_Trip.png">
+<img width="1942" height="1301" alt="Logistic_DataWarehouse-ER_OLTP drawio" src="schema_drawio.png" />
 
 ## Data Warehouse Database
 
