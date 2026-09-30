@@ -12,7 +12,6 @@ for do midterm project
 | Phlapapon Kulto | 673020626-9 | • ออกแบบและจัดทำ ER Diagram<br>• ทำเอกสารอธิบายกระบวนการ ETL ใน README<br>• Staging / Dimension / Fact |
 
 
-<img width="1942" height="1301" alt="Logistic_DataWarehouse-ER_OLTP" src="/workspaces/DW_MiniProject/readme_images/pipline.jpg"/>
 
 ## 🏗 Architecture & Design Principles
 
@@ -347,5 +346,3 @@ Phase 3: Transform & Load Facts (การแปลงและจัดเก�
 
 **`fact_trips_operations`** คือตารางข้อเท็จจริงหลักของการปฏิบัติงานขนส่งที่รวมข้อมูลการวิ่งเที่ยวส่งสินค้า ข้อมูลโหลดสินค้า และเหตุการณ์การจัดส่งเข้าด้วยกัน บันทึกตัววัดสำคัญ เช่น รายได้ น้ำหนักสินค้า ระยะทางจริง ปริมาณน้ำมันที่ใช้ อัตราสิ้นเปลือง (`average_mpg`) เวลาจอดนิ่ง เวลาคอย และแฟล็กการส่งตรงเวลา โดยเชื่อมโยงมิติเวลา รถบรรทุก หางลาก ลูกค้า คลังสินค้า และพนักงานขับรถ เพื่อเป็นศูนย์กลางในการวิเคราะห์ประสิทธิภาพและผลตอบแทนของการขนส่งอย่างครบวงจร
   
-## Interactive Dashboard
-<img src="./readme_images/Data Infographic.png">
