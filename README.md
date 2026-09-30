@@ -11,8 +11,7 @@ for do midterm project
 | Thitisuda Daengseeda | 673020491-6 | • จัดทำเอกสารประกอบการนำเสนอ<br>• Web Application (`app.py`)<br>• Staging / Dimension / Fact  |
 | Phlapapon Kulto | 673020626-9 | • ออกแบบและจัดทำ ER Diagram<br>• ทำเอกสารอธิบายกระบวนการ ETL ใน README<br>• Staging / Dimension / Fact |
 
-
-
+## Link Dashboard : [https://dwminiproject-f4earrdddhz6ssfmng7u7e.streamlit.app/](https://dwminiproject-f4earrdddhz6ssfmng7u7e.streamlit.app/)
 ## 🏗 Architecture & Design Principles
 
 การออกแบบสถาปัตยกรรมข้อมูลในโปรเจกต์นี้ปฏิบัติตามมาตรฐาน **Kimball Data Warehousing Methodology**:
@@ -41,7 +40,8 @@ for do midterm project
 15. Safety Incident ประเภทใดเกิดขึ้นบ่อยที่สุด
     
 ## Data Model Diagram
-<img width="1942" height="1301" alt="Logistic_DataWarehouse-ER_OLTP drawio" src="schema_drawio.png" />
+
+<img width="1942" height="1301" alt="Logistic_DataWarehouse-ER_OLTP drawio" src="https://github.com/user-attachments/assets/2a99d5b0-e90f-4a78-a5cd-2346b675bfca" />
 
 ### ตารางระบบการทำธุรกรรมขนส่งและโลจิสติกส์ (OLTP)
 Customers - ข้อมูลลูกค้าที่ใช้บริการขนส่งสินค้า
@@ -310,17 +310,8 @@ Phase 3: Transform & Load Facts (การแปลงและจัดเก�
 
 
 ## Data Cube Diagram
-<img src="./readme_images/Fact_Delivery.png">
-    
-<img src="./readme_images/Fact_Fuel.png">
 
-<img src="./readme_images/Fact_Load.png">
-
-<img src="./readme_images/Fact_Maintenance.png">
-
-<img src="./readme_images/Fact_Safety_Incident.png">
-
-<img src="./readme_images/Fact_Trip.png">
+<img width="1942" height="1301" alt="Logistic_DataWarehouse-ER_OLTP drawio" src="schema_drawio.png" />
 
 ## Data Warehouse Database
 
