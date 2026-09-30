@@ -2,19 +2,16 @@
 for do midterm project
 
 # Introduce our group
-Nattida Jantasopa 673020044-1
+ชื่อ-นามสกุล | รหัสนักศึกษา | หน้าที่ |
+| :--- | :---: | :--- |
+| Nattida Jantasopa | 673020044-1 |  • แก้ไข Git Conflicts<br>• ออกแบบ Data Model (Star Schema)<br>• Staging / Dimension / Fact |
+| Chutima Boottanai | 673020248-5 | • ทำ query_duckdb<br>•จัดเอกสารData Warehouse ใน README<br>• Staging / Dimension / Fact |
+| Jinrada Sai-Udta | 673020489-3 | • Project Leader<br>• ออกแบบและพัฒนา UX/UI บน Dashboard<br>• Staging / Dimension / Fact |
+| Nanadda Rattanasri| 673020490-8 | • รวบรวมชุดข้อมูล (Data Acquisition & Integration)<br>• จัดทำเอกสารประกอบการนำเสนอ<br>• Staging / Dimension / Fact |
+| Thitisuda Daengseeda | 673020491-6 | • จัดทำเอกสารประกอบการนำเสนอ<br>• Web Application (`app.py`)<br>• Staging / Dimension / Fact  |
+| Phlapapon Kulto | 673020626-9 | • ออกแบบและจัดทำ ER Diagram<br>• ทำเอกสารอธิบายกระบวนการ ETL ใน README<br>• Staging / Dimension / Fact |
 
-Chutima Boottanai 673020248-5
 
-Jinrada Sai-Udta 673020489-3
-
-Nanadda Rattanasri 673020490-8
-
-Thitisuda Daengseeda 673020491-6
-
-Phlapapon Kulto 673020626-9
-
-<img width="1942" height="1301" alt="Logistic_DataWarehouse-ER_OLTP" src="/workspaces/DW_MiniProject/readme_images/pipline.jpg"/>
 
 ## 🏗 Architecture & Design Principles
 
@@ -44,7 +41,7 @@ Phlapapon Kulto 673020626-9
 15. Safety Incident ประเภทใดเกิดขึ้นบ่อยที่สุด
     
 ## Data Model Diagram
-<img width="1942" height="1301" alt="Logistic_DataWarehouse-ER_OLTP drawio" src="https://github.com/user-attachments/assets/b12ca8d3-da40-4fab-83cb-8ada4ef95b75" />
+<img width="1942" height="1301" alt="Logistic_DataWarehouse-ER_OLTP drawio" src="schema_drawio.png" />
 
 ### ตารางระบบการทำธุรกรรมขนส่งและโลจิสติกส์ (OLTP)
 Customers - ข้อมูลลูกค้าที่ใช้บริการขนส่งสินค้า
@@ -281,63 +278,36 @@ Step 4: การวัดผลทางธุรกิจ (Business Intelligen
 
 
 ## ETL Process
-กระบวนการ ETL ในโปรเจกต์นี้ใช้ dbt เป็นหลักในการประมวลผลบน DuckDB เพื่อแปลงข้อมูลดิบจากการขนส่งให้เป็น Data Warehouse รูปแบบ Star Schema โดยแบ่งขั้นตอนอย่างละเอียดดังนี้
-### Step 1: Extract (การสกัดและนำเข้าข้อมูลดิบ)
-Ingestion: ดึงข้อมูลดิบเชิงการดำเนินงาน (Operational Data) จากไฟล์ CSV ต้นทาง เช่น fuel_purchases.csv, drivers.csv, trips.csv เข้าสู่ DuckDB โดยตรงในลักษณะ Raw Tables
+กระบวนการ ETL (Extract, Transform, Load) ในชุดโค้ด SQL ทำหน้าที่แปลงข้อมูลการขนส่งและโลจิสติกส์ดิบจากระบบต้นทาง (fivegexpress) ให้กลายเป็น Data Warehouse  ในรูปแบบ Star Schema เพื่อรองรับการนำไปทำ Dashboard และวิเคราะห์ข้อมูลเชิงลึก
 
-Data Lineage Integration: ในขั้นตอนแรกจะไม่มีการเปลี่ยนโครงสร้างข้อมูลต้นฉบับ แต่จะเพิ่มคอลัมน์ Metadata สำหรับการติดตามร่องรอยข้อมูล (Audit Columns) เข้าไปใน CTE raw_data:
+Phase 1: Extract (การดึงข้อมูลดิบเข้า Staging Schema)
+ในขั้นตอนแรก ระบบจะทำการคัดลอกข้อมูลดิบแบบ 1:1 จากตารางต้นทางทั้ง 12 ตารางเข้ามาพักไว้ที่ staging schema
+- การสร้าง Ingestion Timestamp: บันทึกเวลาที่ดึงข้อมูลเข้าสู่ระบบด้วย current_localtimestamp() เพื่อใช้อ้างอิงย้อนหลังว่าข้อมูลถูกดึงเข้ามา ณ เวลาใด
+- การแยก Layer (Decoupling): การคัดลอกข้อมูลมาไว้ที่ staging ก่อน ช่วยลดภาระการ Query โดยตรงไปที่ระบบหลัก (Production Database) และป้องกันไม่ให้กระบวนการ Transform ส่งผลกระทบต่อประสิทธิภาพของระบบต้นทาง
+  
+Phase 2: Transform & Load Dimensions (การแปลงและจัดเก็บข้อมูลมิติ)
+ขั้นตอนนี้เป็นการนำข้อมูลจาก staging มาทำความสะอาด ปรับโครงสร้าง และโหลดลงตารางมิติ (Dimension Tables) เพื่อใช้เป็นบริบทในการอธิบายข้อมูล
+- การจัดการรูปแบบวันที่ (Date Standardization):
+   - ข้อมูลวันที่จากระบบต้นทางมักมีรูปแบบที่ไม่แน่นอน (เช่น %m/%d/%Y %H:%M:%S, %Y-%m-%d, หรือ %m/%d/%Y)
+   - โค้ดใช้ TRY_STRPTIME ร่วมกับ COALESCE เพื่อลองแปลงข้อความตามฟอร์แมตต่างๆ จนกว่าจะสำเร็จ แล้วปรับ Type ให้เป็น DATE ที่ถูกต้อง
+- การคัดกรองข้อมูลซ้ำ (Deduplication):
+จัดกลุ่มข้อมูลด้วย ROW_NUMBER() OVER (PARTITION BY <id_column>) และเลือกเฉพาะรายการแรก (WHERE row_num = 1) เพื่อให้มั่นใจว่าข้อมูล Master แต่ละชิ้นมีเพียง Record เดียว
+- การสร้าง Surrogate Keys:
+รันลำดับตัวเลขใหม่ด้วย ROW_NUMBER() OVER (ORDER BY <id_column>) เพื่อสร้าง Primary Key ประจำ Data Warehouse (เช่น truck_key, driver_key, customer_key) ซึ่งช่วยเพิ่มประสิทธิภาพการ Join และทำ Indexing
+- การสร้าง ตารางมิติเวลา (dim_date):
+ใช้ generate_series สร้างลำดับวันที่ต่อเนื่องตั้งแต่วันที่ 1 ม.ค. 2022 ถึง 31 ธ.ค. 2024
+คำนวณ Attribute ทางเวลาเพิ่ม เช่น ปี, ไตรมาส, เดือน, ชื่อวัน, และสถานะวันหยุดเสาร์-อาทิตย์ (weekend) พร้อมสร้าง date_key ในรูปแบบตัวเลข (YYYYMMDD)
 
-- stg_loads_at: บันทึกเวลาที่นำข้อมูลเข้าด้วย CURRENT_TIMESTAMP
-  
-- source_filename: บันทึกชื่อไฟล์ต้นทาง
-  
-- batch_id: บันทึกรหัสรอบของการประมวลผลข้อมูล (เช่น BATCH_2026)
-  
-### Step 2: Transform - (Staging Layer: stg_)
-การประมวลผลใน Staging Layer เน้นการทำความสะอาดข้อมูลแบบ 1 ต่อ 1 ก่อนนำไปใช้งานต่อ ผ่าน 3 กระบวนการย่อย:
+Phase 3: Transform & Load Facts (การแปลงและจัดเก็บข้อมูลข้อเท็จจริง)
+ขั้นตอนนี้เป็นการนำข้อมูลธุรกรรม (Transactions) หรือเหตุการณ์ที่เกิดขึ้นจริงในธุรกิจ มาเชื่อมโยงกับตารางมิติ แล้วบันทึกลงตารางข้อเท็จจริง (Fact Tables)
+- การรวมข้อมูลจากหลายแหล่ง (Data Consolidation):
+ในตาราง fact_trips_operations มีการนำข้อมูลการวิ่งรถ (stg_trips), รายละเอียดสินค้า (stg_loads), และสถานะการส่งมอบ (stg_delivery_events) มาประกอบรวมกันเป็น Record เดียวกัน
+- การเชื่อมโยงมิติ (Dimension Lookup via JOIN):
+ทำการ LEFT JOIN ตารางมิติที่สร้างไว้ใน Phase 2 (dim_trucks, dim_drivers, dim_customers ฯลฯ) โดยเปลี่ยนจากการใช้ Business Key เดิม (เช่น truck_id) มาเก็บเป็น Surrogate Key (truck_key) แทน
+- การจัดเตรียมตัววัดทางธุรกิจ (Business Metrics & Keys):
+   - คำนวณคอร์สและตัวเลขทางสถิติ เช่น รายได้ (revenue), ค่าใช้จ่ายน้ำมัน (fuel_cost), ระยะทาง (actual_distance_miles), และค่าปรับการจอดรอ (detention_minutes)
+   - แปลงวันที่เกิดเหตุการณ์ให้เป็น date_key เพื่อเชื่อมเข้ากับ dim_date สำหรับการวิเคราะห์ตามช่วงเวลา
 
-- Text Standardization: ตัดช่องว่างด้วย TRIM() และปรับตัวอักษรเป็นพิมพ์ใหญ่ด้วย UPPER() บนคอลัมน์ที่เป็น Business Keys เช่น driver_id, truck_id, trip_id เพื่อป้องกันปัญหาคีย์ไม่จับคู่กันเนื่องจากเว้นวรรคหรือตัวพิมพ์ต่างกัน
-  
-- Safe Type Casting & Null Handling:
-  
-  ใช้ TRY_CAST() แปลง Data Type อย่างปลอดภัย เช่น แปลงวันที่ด้วย TRY_CAST(purchase_date AS DATE) หากมีข้อมูลผิดปกติระบบจะคืนค่าเป็น NULL แทนการรันล้มเหลว
-
-  ใช้ NULLIF(..., '') แปลงข้อความว่างเปล่าให้เป็น NULL
-
-  ใช้ COALESCE() ใส่ค่า Default เพื่อป้องกันค่าว่าง เช่น หากไม่มีชื่อเมืองให้ใส่ 'Unknown', ไม่มีรัฐให้ใส่ 'N/A' และใส่ 0.0 สำหรับคอลัมน์ตัวเลขเชิงคำนวณ (gallons, total_cost)
-
-- Key Validation & Deduplication:
-กรองเรคคอร์ดที่ขาด Primary Key ออกด้วย WHERE fuel_purchase_id IS NOT NULL
-จัดการข้อมูลซ้ำโดยใช้ Window Function ROW_NUMBER() OVER (PARTITION BY fuel_purchase_id ORDER BY stg_loaded_at) แล้วเลือกเฉพาะรายการแรกสุดที่เข้าสู่ระบบ (WHERE dup_rank = 1)
-
-### Step 3: Transform - (Core DW Layer: dim_ / fct_)
-เป็นการแปลงข้อมูลจาก Staging Layer ให้เป็นโครงสร้างมิติวิเคราะห์ (Star Schema) ในระดับ Core Data Warehouse:
-- Surrogate Key Hashing: แปลง Business Key ให้กลายเป็น Primary Key ประจำตารางมิติด้วยฟังก์ชัน Hash เช่น MD5(CAST(driver_id AS STRING)) ได้เป็น driver_key เพื่อป้องกันปัญหาคีย์เปลี่ยนแปลงจากระบบต้นทาง
-  
-- Business Logic & Metric Derivation:
-  
-  การสร้าง Attributes: รวมชื่อ-นามสกุลด้วย CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, ''))
-  
-  การสร้าง Flag: สร้างคอลัมน์ is_active (true/false) ด้วย CASE WHEN ตรวจสอบสถานะการทำงาน
-  
-  การคำนวณระยะเวลา: คำนวณอายุงาน tenure_years และอายุคนขับ age ด้วยฟังก์ชัน datediff('day', ...) หารด้วย 365.25
-  
-- Star Schema Separation:
-  
-  Dimension Tables (dim_): จัดเก็บข้อมูลบริบท เช่น dim_drivers, dim_truck, dim_route, dim_date
-  
-  Fact Tables (fct_): จัดเก็บธุรกรรมเชิงตัวเลข เช่น fct_fuel, fct_load, fct_delivery โดยดึง Surrogate Key จาก Dimension มาวางเป็น Foreign Key
-กำหนด materialized='table' ใน config ของ dbt เพื่อให้สร้างเป็น Physical Table บน DuckDB ช่วยให้การ JOIN ข้อมูลประมวลผลได้รวดเร็ว
-### Step 4: Load & Quality Assurance (การบันทึกและการตรวจสอบคุณภาพ)
-- Data Quality Testing: ควบคุมมาตรฐานข้อมูลก่อนนำไปใช้งานผ่านไฟล์ schema.yml และรันคำสั่ง dbt test เพื่อตรวจสอบ 3 เงื่อนไขหลัก:
-  
-- not_null: ตรวจสอบว่า Surrogate Key และ Foreign Key ห้ามเป็นค่าว่าง
-  
-- unique: ตรวจสอบว่า Primary Key ในทุกตารางมิติไม่ซ้ำกัน
-  
-- relationships: ตรวจสอบความสมบูรณ์ของ Foreign Key ระหว่าง Fact และ Dimension Tables (Referential Integrity)
-  
-- Serving Data: บันทึกผลลัพธ์ลงในไฟล์ fiveGexpress_duckdb เพื่อรอรับการยิง SQL Query ตรงไปยังตาราง dim_ และ fct_ ผ่านแอปพลิเคชัน Python Streamlit (fiveGdashboard_app.py)
 
 ## Data Cube Diagram
 <img src="./readme_images/Fact_Delivery.png">
@@ -354,29 +324,25 @@ Data Lineage Integration: ในขั้นตอนแรกจะไม่ม
 
 ## Data Warehouse Database
 
-- `dim_customers`: โหลดข้อมูลลูกค้าจาก `stg_customers` และสร้าง `customer_key` โดยใช้ค่า md5 hash จาก `customer_id` , เลือกคอลัมน์ที่ต้องการ และเปลี่ยนชื่อ credit_terms_days เป็น payment_terms, primary_freight_type เป็น primary_freight และ account_status เป็น `status`
+**`dim_customers`** คือตารางมิติลูกค้าที่ทำหน้าที่เก็บโปรไฟล์และบริบททางธุรกิจของคู่ค้า เช่น ชื่อ ประเภทลูกค้า ระยะเวลาให้เครดิตชำระเงิน (`credit_terms_days`) ประเภทการขนส่งหลัก สถานะบัญชี และประมาณการรายได้ต่อปี (`annual_revenue_potential`) โดยมีการแปลงฟอร์แมตวันที่เริ่มสัญญา กำจัดข้อมูลซ้ำด้วย `customer_id` และสร้าง `customer_key` เป็น Surrogate Key สำหรับเชื่อมโยงกับตาราง Fact ในการวิเคราะห์พฤติกรรมและรายได้แยกตามกลุ่มลูกค้า
 
-- `dim_drivers`: ดึงข้อมูลจาก `stg_drivers` และสร้าง `driver_key` แบบ MD5 จาก `driver_id` จากนั้นสร้าง full_name จาก first_name และ last_name พร้อมเก็บข้อมูล hire_date,termination_date,license,home_terminal และคำนวณ experience โดยคำนวณจาก hire_date ถึง termination_date 
+**`dim_date`** คือตารางมิติเวลาปฏิทินกลางที่สร้างขึ้นจากการสร้างลำดับอนุกรมวันที่ตั้งแต่ปี 2022 ถึง 2024 โดยคำนวณและสกัดองค์ประกอบเชิงเวลา ได้แก่ ปี ไตรมาส เดือน ชื่อเดือน ชื่อวัน และการระบุว่าเป็นวันหยุดเสาร์-อาทิตย์ (`weekend`) พร้อมสร้าง `date_key` ในรูปแบบตัวเลข (`YYYYMMDD`) เพื่อใช้เป็นคีย์กลางสำหรับตาราง Fact ทุกตารางในการวิเคราะห์เปรียบเทียบข้อมูลตามมิติเวลาได้อย่างมีประสิทธิภาพ
 
-- `dim_facilities `: ดึงข้อมูลจาก `stg_facilities` และสร้าง `facility_key` ด้วย md5 จาก `facility_id` 
+**`dim_drivers`** คือตารางมิติพนักงานขับรถที่รวบรวมประวัติและคุณลักษณะของพนักงาน เช่น ชื่อ-นามสกุล วันเริ่มงาน วันลาออก สถานะการทำงาน ประเภทใบขับขี่ (`cdl_class`) ประสบการณ์ทำงานเป็นปี วันเกิด และสถานีประจำการ (`home_terminal`) โดยจัดการฟอร์แมตวันที่และคัดกรองข้อมูลซ้ำผ่าน `driver_id` เพื่อสร้าง `driver_key` ใช้สำหรับประเมินประสิทธิภาพ การทำงาน และความปลอดภัยของพนักงานแต่ละคน
 
-- `dim_route`: ดึงข้อมูลจาก `stg_routes` และสร้าง `rouute_key` แบบ MD5 จาก `route_id` และเลือกเก็บข้อมูล `origin_city` , `origin_state`, `destination_city`, `destination_state` รวมถึงเปลี่ยนชื่อ typical_distance_miles เป็น distance , base_rate_per_mile เป็น base_rate, fuel_surcharge_rate เป็น fuel_surcharge และ typical_transit_days เป็น transit_days
+**`dim_facilities`** คือตารางมิติคลังสินค้าและศูนย์กระจายสินค้าที่จัดเก็บข้อมูลสถานที่ ได้แก่ ชื่อ ประเภทคลังสินค้า เมือง รัฐ พิกัดทางภูมิศาสตร์ (ละติจูดและลองจิจูด) ชั่วโมงการทำงาน และจำนวนช่องโหลดสินค้า (`dock_doors`) โดยสร้าง `facility_key` จาก `facility_id` ที่ผ่านการคัดกรองข้อมูลซ้ำ เพื่อนำไปใช้เป็นมิติในการวิเคราะห์ประสิทธิภาพของจุดรับ-ส่งสินค้าและการบริหารจัดการพื้นที่โหลดสินค้า
 
--  `dim_trucks` : ดึงข้อมูลจาก `stg_trucks` และสร้าง `truck_key` แบบ MD5 จาก `truck_id` จากนั้นจัดเก็บรายละเอียดของรถบรรทุก ได้แก่ truck_id, unit_number, make, model_year, VIN, fuel_type, status และ home_terminal  
+**`dim_routes`** คือตารางมิติเส้นทางเดินรถที่เก็บข้อมูลมาตรฐานของแต่ละเส้นทางขนส่ง ได้แก่ เมืองและรัฐต้นทาง เมืองและรัฐปลายทาง ระยะทางโดยประมาณ (`typical_distance_miles`) อัตราค่าบริการพื้นฐานต่อไมล์ อัตราค่าธรรมเนียมน้ำมัน และระยะเวลาเดินทางโดยประมาณ โดยใช้ `route_key` เป็นคีย์จำลองเพื่อประเมินความคุ้มค่าและเปรียบเทียบประสิทธิภาพเทียบกับเส้นทางมาตรฐาน
 
-- `fact_delivery`: ดึงข้อมูลจาก `stg_delivery_events` และเชื่อมกับ `stg_trips` เพื่อเพิ่มข้อมูล `driver_id`, `truck_id` และ `dispaatch_date` และเชื่อมกับ `stg_loads` เพื่อเพิ่ม `customer_id` จากนั้นนำข้อมูลไป join กับ `dim_date`, `dim_customers`, `dim_drivers`, `dim_trucks` และ `dim_facilities` เพื่อสร้าง `date_key`, `customer_key`, `driver_key`, `truck_key` และ `facility_key` สำหรับเชื่อมข้อมูล จากนั้นสร้าง `delivery_event_key` ด้วย ROW_NUMBER() และให้ `trip_id` กับ `load_id` เป็น `degenerate key` พร้อมเปลี่ยนชื่อ scheduled_datetime เป็น scheduled_time, actual_datetime เป็น actual_time และ datention_minutes เป็น delay_minutes รวมถึงสร้าง is_on_time และ is_late เพื่อระบุว่าการจัดส่งตรงงเวลาหรือล่าช้า
+**`dim_trailers`** คือตารางมิติหางลากหรือรถพ่วงที่จัดเก็บคุณลักษณะเฉพาะของอุปกรณ์ เช่น หมายเลขหางลาก ประเภทหางลาก ความยาว หมายเลข VIN วันที่ได้มา สภาพและสถานะการใช้งานปัจจุบัน รวมถึงพิกัดตำแหน่ง โดยกำจัดข้อมูลซ้ำและสร้าง `trailer_key` สำหรับติดตามการใช้งาน อัตราการจัดเก็บ และการกระจายตัวของอุปกรณ์ขนส่ง
 
-- `fact_fuel`: ดึงข้อมูลจาก `stg_fule_purchases` จากนั้นเชื่อม `dim_date` สร้าง `date_key` จาก purchase_date และเชื่อมกับ `dim_trucks` และ `dim_drivers` เพื่อดึง truck_key และ `driver_key` จากนั้นสร้าง `fuel_key` ด้วย md5 จาก fuel_purchase_id และให้ fuel_id และ trip_id เป็น `degenerate key` เพื่อระบุเที่ยวรถ และเก็บข้อมูล gallons, total_cost และเปลี่ยนชื่อ price_per_gallon เป็น price
+**`dim_trucks`** คือตารางมิติหัวรถบรรทุกที่เก็บข้อมูลเฉพาะของยานพาหนะ เช่น ยี่ห้อ ปีที่ผลิต หมายเลข VIN วันที่และระยะทางเมื่อได้รถมา ประเภทน้ำมันเชื้อเพลิง ความจุถังน้ำมัน สถานะรถ และสถานีประจำการ โดยผูกคีย์จำลอง `truck_key` เพื่อใช้เป็นศูนย์กลางในการเชื่อมโยงกับข้อมูลการใช้น้ำมัน การซ่อมบำรุง และอุบัติเหตุของรถแต่ละคัน
 
-- `fact_loads`: ดึงข้อมูลจาก `std_loads` และสร้าง `load_key` ด้วย ROW_NUMBER() จาก `load_id` จากนั้นเชื่อม `dim_date`, `dim_custumer` และ `dim_route` เพื่อสร้าง `date_key`, `customer_key` และ `route_key` จากนั้นกำหนด load_count เป็น 1 เพื่อใช้สำหรับนับจำนวน load และเก็บข้อมูล weight, pieces, revenue, fuel_surcharge, accessorial_chrges โดยเปลี่ยนชื่อ weight_lbs เป็น weight
+**`fact_fuel_purchases`** คือตารางข้อเท็จจริงการซื้อน้ำมันเชื้อเพลิงที่บันทึกเหตุการณ์การเติมน้ำมันแต่ละครั้ง ได้แก่ วันที่ซื้อ เมือง รัฐ ปริมาณแกลลอน และต้นทุนรวม (`fuel_cost`) โดยเชื่อมโยง `date_key` กับมิติเวลา และ `truck_key` กับมิติรถบรรทุก พร้อมใช้เทคนิค Partitioning ตามวันที่ซื้อ เพื่อให้ระบบสามารถวิเคราะห์พฤติกรรมการใช้น้ำมันและควบคุมต้นทุนพลังงานได้อย่างรวดเร็ว
 
-- `fact_maintenance` : ดึงข้อมูลจาก `stg_maintenance_records` สร้าง `maintenance_key` ด้วย md5 จาก `maintenance_id` จากนั้นเชื่อม `dim_date` เพื่อสร้าง `date_key` จาก maintenance_date และเชื่อมกับ `dim_trucks` เพื่อสร้าง `truck_key` สำหรับระบุรถที่เข้ารับการซ่อม และเก็บข้อมูล maintenance_type, labor_cost, parts_cost, total_cost และ downtime โดยเปลี่ยนชื่อจาก downtime_hours เป็น downtime
+**`fact_maintenance`** คือตารางข้อเท็จจริงการซ่อมบำรุงที่บันทึกประวัติและค่าใช้จ่ายในการดูแลรักษารถ เช่น ประเภทการซ่อม เลขไมล์ ชั่วโมงแรงงาน ค่าแรง ค่าอะไหล่ ค่าซ่อมรวม (`maintenance_cost`) และเวลาที่รถต้องจอดเสีย (`downtime_hours`) โดยเชื่อมโยงกับ `date_key` และ `truck_key` พร้อมจัดแบ่งส่วนข้อมูล (Partitioning) ตามวันที่ซ่อม เพื่อใช้ติดตามความสมบูรณ์ของยานพาหนะและควบคุมค่าใช้จ่ายการซ่อมบำรุง
 
-- `fact_safety_incidents`: ดึงข้อมูลจาก `stg_safety_incidents` และสร้าง `Surrogate Key` (safety_incident_key) ด้วย MD5 จาก `incident_id` พร้อมเก็บ `incident_id` เป็น Business Key และใช้ `trip_id` เป็น Degenerate Key (trip_id_degenerate_key) จากนั้นสร้าง `date_key` จาก `incident_date` ในรูปแบบ YYYYMMDD และสร้าง `truck_key` กับ `driver_key` ด้วย MD5 จาก `truck_id` และ `driver_id` เพื่อเชื่อมโยงกับข้อมูลรถบรรทุกและคนขับ พร้อมเก็บประเภทเหตุการณ์ (incident_type) และกำหนด incident_count เป็น 1 เพื่อใช้สำหรับนับจำนวนเหตุการณ์ นอกจากนี้นำ `at_fault_flag` และ `injury_flag` มาเปลี่ยนชื่อเป็น at_fault และ injury และคำนวณ ต้นทุนรวมของเหตุการณ์ (incident_cost) จาก vehicle_damage_cost, cargo_damage_cost และ claim_amount โดยใช้ COALESCE(..., 0) เพื่อแทนค่า NULL ด้วย 0 ทำให้สามารถวิเคราะห์ จำนวนอุบัติเหตุ ความรับผิดชอบ การบาดเจ็บ และต้นทุนความเสียหาย
+**`fact_safety_incidents`** คือตารางข้อเท็จจริงอุบัติเหตุและความปลอดภัยที่บันทึกเหตุการณ์ความไม่ปลอดภัยที่เกิดขึ้น โดยเก็บตัววัดเชิงปริมาณ ได้แก่ มูลค่าความเสียหายของตัวรถ สินค้า และยอดเงินเรียกร้องประกัน พร้อมแฟล็กระบุความผิดและการป้องกันได้ โดยเชื่อมโยงมิติเวลา รถบรรทุก และพนักงานขับรถผ่าน `date_key`, `truck_key` และ `driver_key` เพื่อประเมินความเสี่ยงและวัดผลด้านความปลอดภัยในการทำงาน
+
+**`fact_trips_operations`** คือตารางข้อเท็จจริงหลักของการปฏิบัติงานขนส่งที่รวมข้อมูลการวิ่งเที่ยวส่งสินค้า ข้อมูลโหลดสินค้า และเหตุการณ์การจัดส่งเข้าด้วยกัน บันทึกตัววัดสำคัญ เช่น รายได้ น้ำหนักสินค้า ระยะทางจริง ปริมาณน้ำมันที่ใช้ อัตราสิ้นเปลือง (`average_mpg`) เวลาจอดนิ่ง เวลาคอย และแฟล็กการส่งตรงเวลา โดยเชื่อมโยงมิติเวลา รถบรรทุก หางลาก ลูกค้า คลังสินค้า และพนักงานขับรถ เพื่อเป็นศูนย์กลางในการวิเคราะห์ประสิทธิภาพและผลตอบแทนของการขนส่งอย่างครบวงจร
   
-- `fact_trips`: ดึงข้อมูลจาก `stg_trips` และเชื่อมกับ `stg_loads` ผ่าน  `load_id` เพื่อดึง `customer_id` จากนั้นสร้าง `trip_key` แบบลำดับด้วย ROW_NUMBER() จาก `trip_id` และใช้ `load_id` เป็น `Degenerate Key` (load_id_degenerate_key) จากนั้นเชื่อม `dim_date` เพื่อสร้าง `date_key` , `dim_drivers` เพื่อสร้าง `driver_key` , `dim_trucks` เพื่อสร้าง `truck_key` และ `dim_customers` เพื่อสร้าง `customer_key` จากนั้นกำหนด `trip_count เป็น 1` เพื่อใช้สำหรับนับจำนวนเที่ยวขนส่ง และเก็บ miles, downtime โดยเปลี่ยนชื่อจาก actual_distance_miles และ idle_time_hours ตามลำดับ
-
-- `dim_date`: สร้าง `Date Dimension` ตั้งแต่วันที่ 1950-01-01 ถึง 2030-12-31 โดยใช้ `generate_series` เพื่อสร้างรายการวันที่ต่อเนื่องทุกวัน จากนั้นสร้าง `date_key` ในรูปแบบตัวเลข YYYYMMDD และเก็บข้อมูลวันที่ ได้แก่ วันที่เต็ม (full_date), วันที่ของเดือน (day), เดือน (month), ชื่อเดือน (month_name), ไตรมาส (quarter) และปี (year)
-  
-## Interactive Dashboard
-<img src="./readme_images/Data Infographic.png">
