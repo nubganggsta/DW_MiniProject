@@ -355,7 +355,14 @@ def run_query(query: str) -> pd.DataFrame:
             )
             return pd.DataFrame()
 
+        # กำหนด project root ให้ DuckDB ใช้ค้นหา relative file paths
+        # เช่น datasets/customers.csv
+        project_root = Path(__file__).resolve().parent
+
         with duckdb.connect(database=str(db_file), read_only=True) as con:
+            con.execute(
+                f"SET file_search_path = '{project_root.as_posix()}'"
+            )
             return con.execute(query).df()
 
     except Exception as e:
