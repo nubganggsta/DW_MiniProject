@@ -281,7 +281,7 @@ Step 4: การวัดผลทางธุรกิจ (Business Intelligen
 
 
 ## ETL Process
-กระบวนการ ETL (Extract, Transform, Load) ในชุดโค้ด SQL ข้างต้น ทำหน้าที่แปลงข้อมูลการขนส่งและโลจิสติกส์ดิบจากระบบต้นทาง (fivegexpress) ให้กลายเป็น Data Warehouse  ในรูปแบบ Star Schema เพื่อรองรับการนำไปทำ Dashboard และวิเคราะห์ข้อมูลเชิงลึก
+กระบวนการ ETL (Extract, Transform, Load) ในชุดโค้ด SQL ทำหน้าที่แปลงข้อมูลการขนส่งและโลจิสติกส์ดิบจากระบบต้นทาง (fivegexpress) ให้กลายเป็น Data Warehouse  ในรูปแบบ Star Schema เพื่อรองรับการนำไปทำ Dashboard และวิเคราะห์ข้อมูลเชิงลึก
 
 Phase 1: Extract (การดึงข้อมูลดิบเข้า Staging Schema)
 ในขั้นตอนแรก ระบบจะทำการคัดลอกข้อมูลดิบแบบ 1:1 จากตารางต้นทางทั้ง 12 ตารางเข้ามาพักไว้ที่ staging schema
