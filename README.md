@@ -2,17 +2,15 @@
 for do midterm project
 
 # Introduce our group
-Nattida Jantasopa 673020044-1
+ชื่อ-นามสกุล | รหัสนักศึกษา | หน้าที่ |
+| :--- | :---: | :--- |
+| Nattida Jantasopa | 673020044-1 |  • แก้ไข Git Conflicts<br>• ออกแบบ Data Model (Star Schema)<br>• Staging / Dimension / Fact |
+| Chutima Boottanai | 673020248-5 | • ทำ query_duckdb<br>•จัดเอกสารData Warehouse ใน README<br>• Staging / Dimension / Fact |
+| Jinrada Sai-Udta | 673020489-3 | • Project Leader<br>• ออกแบบและพัฒนา UX/UI บน Dashboard<br>• Staging / Dimension / Fact |
+| Nanadda Rattanasri| 673020490-8 | • รวบรวมชุดข้อมูล (Data Acquisition & Integration)<br>• จัดทำเอกสารประกอบการนำเสนอ<br>• Staging / Dimension / Fact |
+| Thitisuda Daengseeda | 673020491-6 | • จัดทำเอกสารประกอบการนำเสนอ<br>• Web Application (`app.py`)<br>• Staging / Dimension / Fact  |
+| Phlapapon Kulto | 673020626-9 | • ออกแบบและจัดทำ ER Diagram<br>• ทำเอกสารอธิบายกระบวนการ ETL ใน README<br>• Staging / Dimension / Fact |
 
-Chutima Boottanai 673020248-5
-
-Jinrada Sai-Udta 673020489-3
-
-Nanadda Rattanasri 673020490-8
-
-Thitisuda Daengseeda 673020491-6
-
-Phlapapon Kulto 673020626-9
 
 <img width="1942" height="1301" alt="Logistic_DataWarehouse-ER_OLTP" src="/workspaces/DW_MiniProject/readme_images/pipline.jpg"/>
 
